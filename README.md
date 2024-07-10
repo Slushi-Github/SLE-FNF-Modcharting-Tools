@@ -20,7 +20,7 @@ Still very WIP and not everything is supported yet!
 - [FPS Plus](https://github.com/ThatRozebudDude/FPS-Plus-Public) (not tested)
 
 
-## Credits 
+## Credits
 - [Original FNF Team](https://github.com/ninjamuffin99/Funkin) - They made the game
 - [NotITG](https://www.noti.tg/) - Inspiration (made me love modcharts lol)
 - [OpenITG](https://github.com/openitg/openitg) - Math used for some modifiers
@@ -34,7 +34,7 @@ Still very WIP and not everything is supported yet!
 - [Slushi_Github](https://github.com/Slushi-Github) - Help with reorganisation with haxelib edition
 - [2JENO](https://github.com/2JENO) - Help with the Import.hx, GPU thing (fixes some things so thanks!)
 
-## Installation 
+## Installation
 1. You need the most recent version of HaxeFlixel for it to work. (5.5.0 as of writing)
 2. If your running any (engine or psych) that uses SScript (For Custom Modifiers) then I really recommened using versions 6.1.80 and up. NO LOWER VERSIONS! (If you use older versions, sorry but SScript in older version apperantly has many memory leaks when it comes to any scripts (even without modchartingTools). -glowsoony
 ### With Source:
@@ -44,14 +44,14 @@ Still very WIP and not everything is supported yet!
 ```haxe
 class MusicBeatState extends modcharting.ModchartMusicBeatState
 {
-  
+
 ```
 - In PlayState.hx:
 ```haxe
 import modcharting.ModchartFuncs;
 import modcharting.NoteMovement;
 import modcharting.PlayfieldRenderer;
-  
+
 ```
 ```haxe
 override public function create()
@@ -71,13 +71,13 @@ override public function create()
 	ModchartFuncs.loadLuaFunctions(); //add this if you want lua functions in scripts
 	//being used in psych engine as an example
 callOnLuas('onCreatePost', []);
-      
+
   //Find this line and then add it
 public function startCountdown():Void
 {
   generateStaticArrows(0);
   generateStaticArrows(1);
-  
+
   //add after generating strums
   NoteMovement.getDefaultStrumPos(this);
 //Find this line and then add it (For Psych 0.7.1+)
@@ -145,7 +145,7 @@ override function preset()
 	set('ModchartUtil', modcharting.ModchartUtil);
 	for (i in ['mod', 'Modifier'])
 		set(i, modcharting.Modifier); //the game crashes without this???????? what??????????? -- fue glow
-	set('ModifierSubValue', modcharting.Modifier.ModifierSubValue);
+	set('ModifierSubValue', modcharting.modsBackend.ModifierSubValue);
 	set('ModTable', modcharting.ModTable);
 	set('NoteMovement', modcharting.NoteMovement);
 	set('NotePositionData', modcharting.NotePositionData);
@@ -153,7 +153,7 @@ override function preset()
 	set('PlayfieldRenderer', modcharting.PlayfieldRenderer);
 	set('SimpleQuaternion', modcharting.SimpleQuaternion);
 	set('SustainStrip', modcharting.SustainStrip);
-	
+
 	modcharting.ModchartFuncs.loadHScriptFunctions(this);
 //--(else if you use SScript above or equal to version 6.1.80)--
 override function preset()
