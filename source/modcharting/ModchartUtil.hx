@@ -1,67 +1,147 @@
 package modcharting;
 
+import flixel.tweens.FlxEase;
 import flixel.math.FlxMath;
 import flixel.math.FlxAngle;
 import openfl.geom.Vector3D;
 import flixel.FlxG;
 
+#if LEATHER
+import states.PlayState;
+import game.Note;
+import game.Conductor;
+#elseif (PSYCH && PSYCHVERSION >= "0.7")
 import states.PlayState;
 import objects.Note;
+#else
+import PlayState;
+import Note;
+#end
 
 using StringTools;
 
 class ModchartUtil
 {
-    public static function getDownscroll(instance:ModchartMusicBeatState):Bool
+    public static function getDownscroll(instance:ModchartMusicBeatState)
     {
         //need to test each engine
         //not expecting all to work
-        return ClientPrefs.data.downScroll;
+        #if PSYCH
+            #if (PSYCHVERSION >= "0.7")
+            return ClientPrefs.downScroll;
+            #else
+            return ClientPrefs.data.downScroll;
+            #end
+        #elseif LEATHER
+        return utilities.Options.getData("downscroll");
+        #elseif ANDROMEDA //dunno why youd use this on andromeda but whatever, already got its own cool modchart system
+        return instance.currentOptions.downScroll;
+        #elseif KADE 
+        return PlayStateChangeables.useDownscroll;
+        #elseif FOREVER_LEGACY //forever might not work just yet because of the multiple strumgroups
+        return Init.trueSettings.get('Downscroll');
+        #elseif FPSPLUS 
+        return Config.downscroll;
+        #elseif MIC_D_UP //basically no one uses this anymore
+        return MainVariables._variables.scroll == "down"
+        #else 
+        return false;
+        #end
     }
-    public static function getMiddlescroll(instance:ModchartMusicBeatState):Bool
+    public static function getMiddlescroll(instance:ModchartMusicBeatState)
     {
-        return ClientPrefs.data.middleScroll;
+        #if PSYCH
+            #if (PSYCHVERSION >= "0.7")
+            return ClientPrefs.middleScroll;
+            #else
+            return ClientPrefs.data.middleScroll;
+            #end
+        #elseif LEATHER
+        return utilities.Options.getData("middlescroll");
+        #else 
+        return false;
+        #end
     }
-    public static function getScrollSpeed(instance:PlayState):Float
+    public static function getScrollSpeed(instance:PlayState)
     {
         if (instance == null)
-            return PlayState.currentChart.scrollSpeed;
+            return PlayState.SONG.speed;
 
-        return PlayState.instance?.songSpeed; //most engines just use this
+        #if (PSYCH || ANDROMEDA) 
+        return instance.songSpeed;
+        #elseif LEATHER
+        @:privateAccess
+        return instance.speed;
+        #elseif KADE 
+        return PlayStateChangeables.scrollSpeed == 1 ? PlayState.SONG.speed : PlayStateChangeables.scrollSpeed;
+        #else 
+        return PlayState.SONG.speed; //most engines just use this
+        #end
     }
 
-    public static function getIsPixelNotes(instance:ModchartMusicBeatState):Bool
+    public static function getIsPixelStage(instance:ModchartMusicBeatState)
     {
         if (instance == null)
             return false;
-        return PlayState.isPixelNotes;
-    }
-
-
-    public static function getIsPixelStage(instance:ModchartMusicBeatState):Bool
-    {
-        if (instance == null)
-            return false;
+        #if LEATHER
+        return PlayState.SONG.ui_Skin == 'pixel';
+        #else 
         return PlayState.isPixelStage;
+        #end
     }
 
-    public static function getNoteOffsetX(daNote:Note, instance:ModchartMusicBeatState):Float
+    public static function getNoteOffsetX(daNote:Note, instance:ModchartMusicBeatState)
     {
+        #if PSYCH
         return daNote.offsetX;
+        #elseif LEATHER 
+        //fuck
+        var offset:Float = 0;
+       
+        var lane = daNote.noteData;
+        if (daNote.mustPress)
+            lane += NoteMovement.keyCount;
+        var strum = instance.playfieldRenderer.strumGroup.members[lane];
+
+        var arrayVal = Std.string([lane, daNote.arrow_Type, daNote.isSustainNote]);
+
+        if (!NoteMovement.leatherEngineOffsetStuff.exists(arrayVal))
+        {
+            var tempShit:Float = 0.0;
+
+            
+            var targetX = NoteMovement.defaultStrumX[lane];
+            var xPos = targetX;
+            while (Std.int(xPos + (daNote.width / 2)) != Std.int(targetX + (strum.width / 2)))
+            {
+                xPos += (xPos + daNote.width > targetX + strum.width ? -0.1 : 0.1);
+                tempShit += (xPos + daNote.width > targetX + strum.width ? -0.1 : 0.1);
+            }
+            //trace(arrayVal);
+            //trace(tempShit);
+
+            NoteMovement.leatherEngineOffsetStuff.set(arrayVal, tempShit);
+        }
+        offset = NoteMovement.leatherEngineOffsetStuff.get(arrayVal);
+        
+        return offset;
+        #else 
+        return (daNote.isSustainNote ? 37 : 0); //the magic number
+        #end
     }
 
     static var currentFakeCrochet:Float = -1;
     static var lastBpm:Float = -1;
 
-    public static function getFakeCrochet():Float
+    public static function getFakeCrochet()
     {
-        if (PlayState.currentChart.timeChanges[0].bpm != lastBpm)
+        if (PlayState.SONG.bpm != lastBpm)
         {
-            currentFakeCrochet = (60 / PlayState.currentChart.timeChanges[0].bpm) * 1000; //only need to calculate once
-            lastBpm = PlayState.currentChart.timeChanges[0].bpm;
+            currentFakeCrochet = (60 / PlayState.SONG.bpm) * 1000; //only need to calculate once
+            lastBpm = PlayState.SONG.bpm;
         }
         return currentFakeCrochet;
-
+            
     }
 
     public static var zNear:Float = 0;
@@ -71,7 +151,7 @@ class ModchartUtil
     /**
         Converts a Vector3D to its in world coordinates using perspective math
     **/
-    public static function calculatePerspective(pos:Vector3D, FOV:Float, offsetX:Float = 0, offsetY:Float = 0):Vector3D
+    public static function calculatePerspective(pos:Vector3D, FOV:Float, offsetX:Float = 0, offsetY:Float = 0)
     {
 
         /* math from opengl lol
@@ -104,13 +184,15 @@ class ModchartUtil
         yOffsetToCenter += (offsetY * -zPerspectiveOffset);
 
         var xPerspective = xOffsetToCenter*(1/tanHalfFOV);
-        var yPerspective = yOffsetToCenter/(1/tanHalfFOV);
+        var yPerspective = yOffsetToCenter*tanHalfFOV;
         xPerspective /= -zPerspectiveOffset;
         yPerspective /= -zPerspectiveOffset;
 
         pos.x = xPerspective+(FlxG.width*0.5); //offset it back to normal
         pos.y = yPerspective+(FlxG.height*0.5);
         pos.z = zPerspectiveOffset;
+
+        
 
         //pos.z -= 1;
         //pos = perspectiveMatrix.transformVector(pos);
@@ -139,20 +221,63 @@ class ModchartUtil
         return pos;
     }
 
-    public static function getTimeFromBeat(beat:Float):Float
+    public static function getFlxEaseByString(?ease:String = '') {
+		switch(ease.toLowerCase().trim()) {
+			case 'backin': return FlxEase.backIn;
+			case 'backinout': return FlxEase.backInOut;
+			case 'backout': return FlxEase.backOut;
+			case 'bouncein': return FlxEase.bounceIn;
+			case 'bounceinout': return FlxEase.bounceInOut;
+			case 'bounceout': return FlxEase.bounceOut;
+			case 'circin': return FlxEase.circIn;
+			case 'circinout': return FlxEase.circInOut;
+			case 'circout': return FlxEase.circOut;
+			case 'cubein': return FlxEase.cubeIn;
+			case 'cubeinout': return FlxEase.cubeInOut;
+			case 'cubeout': return FlxEase.cubeOut;
+			case 'elasticin': return FlxEase.elasticIn;
+			case 'elasticinout': return FlxEase.elasticInOut;
+			case 'elasticout': return FlxEase.elasticOut;
+			case 'expoin': return FlxEase.expoIn;
+			case 'expoinout': return FlxEase.expoInOut;
+			case 'expoout': return FlxEase.expoOut;
+			case 'quadin': return FlxEase.quadIn;
+			case 'quadinout': return FlxEase.quadInOut;
+			case 'quadout': return FlxEase.quadOut;
+			case 'quartin': return FlxEase.quartIn;
+			case 'quartinout': return FlxEase.quartInOut;
+			case 'quartout': return FlxEase.quartOut;
+			case 'quintin': return FlxEase.quintIn;
+			case 'quintinout': return FlxEase.quintInOut;
+			case 'quintout': return FlxEase.quintOut;
+			case 'sinein': return FlxEase.sineIn;
+			case 'sineinout': return FlxEase.sineInOut;
+			case 'sineout': return FlxEase.sineOut;
+			case 'smoothstepin': return FlxEase.smoothStepIn;
+			case 'smoothstepinout': return FlxEase.smoothStepInOut;
+			case 'smoothstepout': return FlxEase.smoothStepInOut;
+			case 'smootherstepin': return FlxEase.smootherStepIn;
+			case 'smootherstepinout': return FlxEase.smootherStepInOut;
+			case 'smootherstepout': return FlxEase.smootherStepOut;
+		}
+		return FlxEase.linear;
+	}
+
+
+    public static function getTimeFromBeat(beat:Float)
     {
         var totalTime:Float = 0;
-        var curBpm = Conductor.instance.bpm;
-        if (PlayState.currentChart != null)
-            curBpm = PlayState.currentChart.timeChanges[0].bpm;
+        var curBpm = Conductor.bpm;
+        if (PlayState.SONG != null)
+            curBpm = PlayState.SONG.bpm;
         for (i in 0...Math.floor(beat))
         {
-            if (PlayState.currentChart.timeChanges.length > 0)
+            if (Conductor.bpmChangeMap.length > 0)
             {
-                for (j in 0...PlayState.currentChart.timeChanges.length)
+                for (j in 0...Conductor.bpmChangeMap.length)
                 {
-                    if (totalTime >= PlayState.currentChart.timeChanges[j].timeStamp)
-                        curBpm = PlayState.currentChart.timeChanges[j].bpm;
+                    if (totalTime >= Conductor.bpmChangeMap[j].songTime)
+                        curBpm = Conductor.bpmChangeMap[j].bpm;
                 }
             }
             totalTime += (60/curBpm)*1000;
