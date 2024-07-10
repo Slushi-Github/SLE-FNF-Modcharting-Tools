@@ -25,6 +25,22 @@ class NotePositionData implements IFlxDestroyable
     public var incomingAngleX:Float;
     public var incomingAngleY:Float;
     public var strumTime:Float;
+
+    public var stealthGlow:Float;
+    public var glowRed:Float;
+    public var glowGreen:Float;
+    public var glowBlue:Float;
+
+    public var arrowPathAlpha:Float = 0;
+    public var arrowPathLength:Float = 0;
+    public var arrowPathBackwardsLength:Float = 0;
+
+    public var pathGrain:Float = 0;
+
+    public var spiralHold:Float = 0;
+    // public var pathColor:StringTools.hex();
+
+    // public var straightHold:Float;
     public function new() {}
     public function destroy() {}
     public static function get() :  NotePositionData
@@ -39,10 +55,10 @@ class NotePositionData implements IFlxDestroyable
         this.z = z;
         this.angle = 0;
         this.alpha = 1;
-        this.scaleX = scaleX; 
-        this.scaleY = scaleY; 
-        this.skewX = skewX; 
-        this.skewY = skewY; 
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
+        this.skewX = skewX;
+        this.skewY = skewY;
         this.index = lane;
         this.playfieldIndex = pf;
         this.lane = lane;
@@ -52,19 +68,35 @@ class NotePositionData implements IFlxDestroyable
         this.incomingAngleX = 0;
         this.incomingAngleY = 0;
         this.strumTime = 0;
+
+        this.stealthGlow = 0;
+        this.glowRed = 1;
+        this.glowGreen = 1;
+        this.glowBlue = 1;
+
+        this.arrowPathAlpha = 0;
+        this.arrowPathLength = 0;
+        this.arrowPathBackwardsLength = 0;
+
+        this.pathGrain = 0;
+
+        this.spiralHold = 0;
+        // this.pathColor = "000000";
+
+        // this.straightHold = 0; //why tf does a strum need a damn "straightHold" value XD?
     }
 
-    public function setupNote(x:Float, y:Float, z:Float, lane:Int, scaleX:Float, scaleY:Float, skewX:Float, skewY:Float, pf:Int, alpha:Float, curPos:Float, noteDist:Float, iaX:Float, iaY:Float, strumTime:Float, index:Int)
+    public function setupNote(x:Float, y:Float, z:Float, lane:Int, scaleX:Float, scaleY:Float, skewX:Float, skewY:Float, pf:Int, alpha:Float, curPos:Float, noteDist:Float, iaX:Float, iaY:Float, strumTime:Float, index:Int, )
     {
         this.x = x;
         this.y = y;
         this.z = z;
         this.angle = 0;
         this.alpha = alpha;
-        this.scaleX = scaleX; 
-        this.scaleY = scaleY; 
-        this.skewX = skewX; 
-        this.skewY = skewY; 
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
+        this.skewX = skewX;
+        this.skewY = skewY;
         this.index = index;
         this.playfieldIndex = pf;
         this.lane = lane;
@@ -74,5 +106,21 @@ class NotePositionData implements IFlxDestroyable
         this.incomingAngleX = iaX;
         this.incomingAngleY = iaY;
         this.strumTime = strumTime;
+
+         this.stealthGlow = 0;
+        this.glowRed = 1;
+        this.glowGreen = 1;
+        this.glowBlue = 1;
+
+        this.arrowPathAlpha = 0;
+        this.arrowPathLength = 0;
+        this.arrowPathBackwardsLength = 0;
+
+        this.pathGrain = 0;
+
+        this.spiralHold = 0;
+        // this.pathColor = "000000";
+
+        // this.straightHold = 0; //different to up this doesn't break shit LOL
     }
 }
