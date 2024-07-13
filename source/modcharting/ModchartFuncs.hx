@@ -356,11 +356,11 @@ class ModchartFuncs
                 {
                     var modName = subModCheck[0];
                     var subModName = subModCheck[1];
-                    instance.playfieldRenderer.modifierTable.tweenModifierSubValue(modName,subModName,value,time*Conductor.instance.beatLengthMs*0.001,ease, beat);
+                    instance.playfieldRenderer.modifierTable.tweenModifierSubValue(modName,subModName,value,time*Conductor.crochet*0.001,ease, beat);
                 }
                 else
                 {
-                    instance.playfieldRenderer.modifierTable.tweenModifier(name,value,time*Conductor.instance.beatLengthMs*0.001,ease, beat);
+                    instance.playfieldRenderer.modifierTable.tweenModifier(name,value,time*Conductor.crochet*0.001,ease, beat);
                 }
             }
         };

@@ -29,8 +29,8 @@ class ModchartEventManager
             event.func(event.args);
 			events.shift();
 		}
-        Modifier.beat = ((Conductor.songPosition *0.001)*(Conductor.instance.bpm/60));
-        Modifier.step = ((Conductor.songPosition *0.001)*(Conductor.instance.bpm/60)) * 4;
+        Modifier.beat = ((Conductor.songPosition *0.001)*(Conductor.bpm/60));
+        Modifier.step = ((Conductor.songPosition *0.001)*(Conductor.bpm/60)) * 4;
         Modifier.beatFloor = Math.floor(Modifier.beat);
         Modifier.stepFloor = Math.floor(Modifier.step);
     }
