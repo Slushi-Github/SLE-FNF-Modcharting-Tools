@@ -22,15 +22,15 @@ class ModchartEventManager
         }
 		while(events.length > 0) {
 			var event:ModchartEvent = events[0];
-			if(Conductor.instance.songPosition < event.time) {
+			if(Conductor.songPosition < event.time) {
 				break;
 			}
             //Reflect.callMethod(this, event.func, event.args);
             event.func(event.args);
 			events.shift();
 		}
-        Modifier.beat = ((Conductor.instance.songPosition *0.001)*(Conductor.instance.bpm/60));
-        Modifier.step = ((Conductor.instance.songPosition *0.001)*(Conductor.instance.bpm/60)) * 4;
+        Modifier.beat = ((Conductor.songPosition *0.001)*(Conductor.instance.bpm/60));
+        Modifier.step = ((Conductor.songPosition *0.001)*(Conductor.instance.bpm/60)) * 4;
         Modifier.beatFloor = Math.floor(Modifier.beat);
         Modifier.stepFloor = Math.floor(Modifier.step);
     }

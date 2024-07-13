@@ -243,30 +243,30 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
     private function getNoteCurPos(noteIndex:Int, strumTimeOffset:Float = 0, ?daDistance:Float = 0):Float
     {
         if (this.notes.members[noteIndex].isSustainNote && ModchartUtil.getDownscroll(instance))
-            strumTimeOffset -= Std.int(Conductor.instance.stepCrochet/this.getCorrectScrollSpeed()); //psych does this to fix its sustains but that breaks the visuals so basically reverse it back to normal
+            strumTimeOffset -= Std.int(Conductor.stepCrochet/this.getCorrectScrollSpeed()); //psych does this to fix its sustains but that breaks the visuals so basically reverse it back to normal
 
         if (notes.members[noteIndex].isSustainNote){
             //moved those inside holdsMath cuz they are only needed for sustains ig?
             var noteDist = daDistance;
 
-            strumTimeOffset += Std.int(Conductor.instance.stepCrochet/getCorrectScrollSpeed());
+            strumTimeOffset += Std.int(Conductor.stepCrochet/getCorrectScrollSpeed());
             switch(ModchartUtil.getDownscroll(instance)){
                 case true:
                     if (noteDist > 0){
-                        strumTimeOffset -= Std.int(Conductor.instance.stepCrochet);
-                        strumTimeOffset += Std.int(Conductor.instance.stepCrochet/getCorrectScrollSpeed());
+                        strumTimeOffset -= Std.int(Conductor.stepCrochet);
+                        strumTimeOffset += Std.int(Conductor.stepCrochet/getCorrectScrollSpeed());
                     }else{
-                        strumTimeOffset += Std.int(Conductor.instance.stepCrochet/getCorrectScrollSpeed());
+                        strumTimeOffset += Std.int(Conductor.stepCrochet/getCorrectScrollSpeed());
                     }
                 case false:
                     if(noteDist > 0){
-                        strumTimeOffset -= Std.int(Conductor.instance.stepCrochet);
+                        strumTimeOffset -= Std.int(Conductor.stepCrochet);
                     }
             }
             //FINALLY OMG I HATE THIS FUCKING MATH LMAO
         }
 
-        var distance = (Conductor.instance.songPosition - this.notes.members[noteIndex].strumTime) + strumTimeOffset;
+        var distance = (Conductor.songPosition - this.notes.members[noteIndex].strumTime) + strumTimeOffset;
         return distance*this.getCorrectScrollSpeed();
     }
     private function getLane(noteIndex:Int):Int
@@ -526,7 +526,7 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
     public function getCorrectScrollSpeed():Float
     {
         if (inEditor)
-            return setRendererSpeed != null ? setRendererSpeed : PlayState.currentChart?.scrollSpeed ?? 1.0; //just use this while in editor so the instance shit works
+            return setRendererSpeed != null ? setRendererSpeed : PlayState.SONG?.speed ?? 1.0; //just use this while in editor so the instance shit works
         else
             return setRendererSpeed != null ? setRendererSpeed : ModchartUtil.getScrollSpeed(playStateInstance);
         return 1.0;

@@ -62,7 +62,7 @@ class ModchartFile
     {
         suffixForPath = '';
         if (CoolUtil.opponentModeActive && activeOpponentmodeSuffix) suffixForPath = '-opponentMode';
-        data = loadFromJson(PlayState.currentChart.songName.toLowerCase(), Difficulty.getString().toLowerCase() == null ? Difficulty.defaultList[PlayState.storyDifficulty] : Difficulty.getString().toLowerCase());
+        data = loadFromJson(PlayState.SONG.songId.toLowerCase(), Difficulty.getString().toLowerCase() == null ? Difficulty.defaultList[PlayState.storyDifficulty] : Difficulty.getString().toLowerCase());
         this.renderer = renderer;
         renderer.modchart = this;
         loadPlayfields();

@@ -170,7 +170,7 @@ class ModTable
         if (modifiers.exists(modifier))
         {
             var easefunc = psychlua.LuaUtils.getTweenEaseByString(ease);
-            if (Conductor.instance.songPosition >= ModchartUtil.getTimeFromBeat(beat)+(time*1000)) //cancel if should have ended
+            if (Conductor.songPosition >= ModchartUtil.getTimeFromBeat(beat)+(time*1000)) //cancel if should have ended
             {
                 modifiers.get(modifier).currentValue = val;
                 return;
@@ -179,10 +179,10 @@ class ModTable
             var tween = renderer.createTween(modifiers.get(modifier), {currentValue: val}, time, {ease: easefunc,
                 onComplete: function(twn:FlxTween) {}
             });
-            if (Conductor.instance.songPosition > ModchartUtil.getTimeFromBeat(beat)) //skip to where it should be i guess??
+            if (Conductor.songPosition > ModchartUtil.getTimeFromBeat(beat)) //skip to where it should be i guess??
             {
                 @:privateAccess
-                tween._secondsSinceStart += ((Conductor.instance.songPosition-ModchartUtil.getTimeFromBeat(beat))*0.001);
+                tween._secondsSinceStart += ((Conductor.songPosition-ModchartUtil.getTimeFromBeat(beat))*0.001);
                 @:privateAccess
                 tween.update(0);
             }
@@ -203,7 +203,7 @@ class ModTable
 
                 var startValue = modifiers.get(modifier).subValues.get(subValue).value;
 
-                if (Conductor.instance.songPosition >= ModchartUtil.getTimeFromBeat(beat)+(time*1000)) //cancel if should have ended
+                if (Conductor.songPosition >= ModchartUtil.getTimeFromBeat(beat)+(time*1000)) //cancel if should have ended
                 {
                     modifiers.get(modifier).subValues.get(subValue).value = val;
                     return;
@@ -220,10 +220,10 @@ class ModTable
                             modifiers.get(modifier).subValues.get(subValue).value = FlxMath.lerp(startValue, val, easefunc(twn.percent));
                     }
                 });
-                if (Conductor.instance.songPosition > ModchartUtil.getTimeFromBeat(beat)) //skip to where it should be i guess??
+                if (Conductor.songPosition > ModchartUtil.getTimeFromBeat(beat)) //skip to where it should be i guess??
                 {
                     @:privateAccess
-                    tween._secondsSinceStart += ((Conductor.instance.songPosition-ModchartUtil.getTimeFromBeat(beat))*0.001);
+                    tween._secondsSinceStart += ((Conductor.songPosition-ModchartUtil.getTimeFromBeat(beat))*0.001);
                     @:privateAccess
                     tween.update(0);
                 }

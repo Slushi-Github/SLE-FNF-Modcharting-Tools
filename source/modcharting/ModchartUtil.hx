@@ -25,7 +25,7 @@ class ModchartUtil
     public static function getScrollSpeed(instance:PlayState):Float
     {
         if (instance == null)
-            return PlayState.currentChart.scrollSpeed;
+            return PlayState.SONG.speed;
 
         return PlayState.instance?.songSpeed; //most engines just use this
     }
@@ -55,10 +55,10 @@ class ModchartUtil
 
     public static function getFakeCrochet():Float
     {
-        if (PlayState.currentChart.timeChanges[0].bpm != lastBpm)
+        if (PlayState.SONG.bpm != lastBpm)
         {
-            currentFakeCrochet = (60 / PlayState.currentChart.timeChanges[0].bpm) * 1000; //only need to calculate once
-            lastBpm = PlayState.currentChart.timeChanges[0].bpm;
+            currentFakeCrochet = (60 / PlayState.SONG.bpm) * 1000; //only need to calculate once
+            lastBpm = PlayState.SONG.bpm;
         }
         return currentFakeCrochet;
 
@@ -142,17 +142,17 @@ class ModchartUtil
     public static function getTimeFromBeat(beat:Float):Float
     {
         var totalTime:Float = 0;
-        var curBpm = Conductor.instance.bpm;
-        if (PlayState.currentChart != null)
-            curBpm = PlayState.currentChart.timeChanges[0].bpm;
+        var curBpm = Conductor.bpm;
+        if (PlayState.SONG != null)
+            curBpm = PlayState.SONG.bpm;
         for (i in 0...Math.floor(beat))
         {
-            if (PlayState.currentChart.timeChanges.length > 0)
+            if (Conductor.bpmChangeMap.length > 0)
             {
-                for (j in 0...PlayState.currentChart.timeChanges.length)
+                for (j in 0...Conductor.bpmChangeMap.length)
                 {
-                    if (totalTime >= PlayState.currentChart.timeChanges[j].timeStamp)
-                        curBpm = PlayState.currentChart.timeChanges[j].bpm;
+                    if (totalTime >= Conductor.bpmChangeMap[j].songTime)
+                        curBpm = Conductor.bpmChangeMap[j].bpm;
                 }
             }
             totalTime += (60/curBpm)*1000;
