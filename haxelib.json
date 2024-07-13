@@ -1,6 +1,6 @@
 {
     "name": "fnf-modcharting-tools",
-    "url" : "https://github.com/glowsoony/FNF-Modcharting-Tools/tree/original",
+    "url" : "https://github.com/glowsoony/FNF-Modcharting-Tools",
     "license": "Apache",
     "tags": ["fnf"],
     "description": "A modchart framework for Friday Night Funkin.",
