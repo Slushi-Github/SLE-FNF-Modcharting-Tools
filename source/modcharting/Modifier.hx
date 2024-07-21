@@ -4768,6 +4768,37 @@ class StrumBounceModifier extends Modifier
   }
 }
 
+class StrumBounceAutoModifier extends Modifier
+{
+  override function setupInformation()
+  {
+    subValues.set('side', new ModifierSubValue(0.0));
+    subValues.set('speed', new ModifierSubValue(0.0));
+  }
+
+  var x:Float = 0;
+  var commonNumber:Float = 0;
+  var isPlayer:Bool = false;
+
+  override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+  {
+    var daswitch = 1;
+    if (instance != null)
+        if (ModchartUtil.getDownscroll(instance))
+            daswitch = -1;
+
+    x = (Conductor.songPosition % 300) / subValues.get('speed').value;
+    commonNumber = ((-x * x + 6 * x) * 100 / 6.3 * -1) * currentValue;
+
+    noteData.y += commonNumber * daswitch;
+  }
+
+  override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+  {
+    noteMath(noteData, lane, 0, pf);
+  }
+}
+
 class StrumCircleModifier extends Modifier
 {
   override function setupInformation()
@@ -4822,6 +4853,32 @@ class StrumCircleModifier extends Modifier
             var mult:Array<Float> = [-1.5, -0.5, 0.5, 1.5];
             noteData.x += ((-currentValue + FlxMath.fastCos(ang / 180 * Math.PI) * (cx - currentValue)) + mult[Std.int(Math.abs(lane % 4))]);
     }
+  }
+
+  override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+  {
+    noteMath(noteData, lane, 0, pf);
+  }
+}
+
+class StrumCircleAutoModifier extends Modifier
+{
+  override function setupInformation()
+  {
+    subValues.set('velocity', new ModifierSubValue(0.0));
+    subValues.set('start', new ModifierSubValue(0.0));
+  }
+
+  var cx:Float = 0;
+  var ang:Float = 0;
+
+  override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+  {
+    cx = ((840 - currentValue) + currentValue);
+    ang = Conductor.songPosition / subValues.get('velocity').value * 360;
+    noteData.z += FlxMath.fastSin(ang / 180 * Math.PI) * 100;
+    var mult:Array<Float> = [-1.5, -0.5, 0.5, 1.5];
+    noteData.x += (((subValues.get('start').value*currentValue) + FlxMath.fastCos(ang / 180 * Math.PI) * (cx - currentValue)) + mult[Std.int(Math.abs(lane % 4))]);
   }
 
   override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)

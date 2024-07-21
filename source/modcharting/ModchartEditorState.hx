@@ -958,8 +958,8 @@ class ModchartEditorState extends states.MusicBeatState
     public function generateSong():Void
     {
         var songData = PlayState.SONG;
-        var boyfriendVocals:String = getVocalFromCharacter(songData.player1);
-		var dadVocals:String = getVocalFromCharacter(songData.player2);
+        var boyfriendVocals:String = getVocalFromCharacter(songData.characters.player);
+		var dadVocals:String = getVocalFromCharacter(songData.characters.opponent);
 
         vocals = new FlxSound();
         opponentVocals = new FlxSound();
@@ -977,6 +977,8 @@ class ModchartEditorState extends states.MusicBeatState
             if(oppVocals != null) opponentVocals.loadEmbedded(oppVocals);
         }
         catch(e){}
+        FlxG.sound.list.add(vocals);
+        FlxG.sound.list.add(opponentVocals);
 
         inst = new FlxSound();
         try

@@ -69,10 +69,10 @@ class ModchartFuncs
         funk.set('ease', function(beat:Float, time:Float, easeStr:String, argsAsString:String){
             ease(beat, time, easeStr, argsAsString);
         });
-        funk.set('sSetModValue', function(beat:Float, argsAsString:String){
+        funk.set('stepSetModValue', function(beat:Float, argsAsString:String){
             stepSet(beat, argsAsString);
         });
-        funk.set('sEaseModValue', function(beat:Float, time:Float, easeStr:String, argsAsString:String){
+        funk.set('stepEaseModValue', function(beat:Float, time:Float, easeStr:String, argsAsString:String){
             stepEase(beat, time, easeStr, argsAsString);
         });
         funk.set('setAdd', function(beat:Float, argsAsString:String){
@@ -406,12 +406,13 @@ class ModchartFuncs
         };
         instance.playfieldRenderer.eventManager.addEvent(beat, func, args);
     }
-
+    
     public static function stepSet(step:Float, argsAsString:String)
     {
         var actualBeat = (step/4);
         set(actualBeat, argsAsString);
     }
+
     public static function stepEase(step:Float, time:Float, daease:String, argsAsString:String)
     {
         var actualBeat = (step/4);

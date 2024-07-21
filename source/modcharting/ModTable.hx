@@ -234,7 +234,7 @@ class ModTable
         }
     }
 
-     public function tweenAdd(modifier:String, val:Float, time:Float, ease:String, beat:Float)
+    public function tweenAdd(modifier:String, val:Float, time:Float, ease:String, beat:Float)
     {
         var modifiers:Map<String, Modifier> = renderer.modifierTable.modifiers;
         if (modifiers.exists(modifier))
