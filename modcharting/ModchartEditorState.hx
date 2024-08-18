@@ -337,9 +337,14 @@ class ModchartEditorState extends states.MusicBeatState
         opponentMode = (ClientPrefs.getGameplaySetting('opponent') && !PlayState.SONG.options.blockOpponentMode);
 	    CoolUtil.opponentModeActive = opponentMode;
 
-        var bg:FlxSprite = new FlxSprite(0, 0).loadGraphic(Paths.image('menuDesat'));
+        var bg:FlxSprite = new FlxSprite(0, 0).loadGraphic(SlushiMain.getSLEPath('BGs/SlushiBGModchartEditor.png'));
         bg.setGraphicSize(Std.int(FlxG.width), Std.int(FlxG.height));
         add(bg);
+
+        var SLELogo = new FlxSprite(0, 0).loadGraphic(SlushiMain.getSLEPath('SlushiEngineLogoSCE.png'));
+		SLELogo.setGraphicSize(Std.int(SLELogo.width * 0.8));
+		SLELogo.antialiasing = ClientPrefs.data.antialiasing;
+		add(SLELogo);
 
         if (PlayState.isPixelStage) //Skew Kills Pixel Notes (How are you going to stretch already pixelated bit by bit notes?)
         {
@@ -420,7 +425,7 @@ class ModchartEditorState extends states.MusicBeatState
         debugText = new FlxText(0, gridSize*2, 0, "", 16);
         debugText.alignment = FlxTextAlign.LEFT;
 
-        UI_box = new PsychUIBox(100, gridSize*2, FlxG.width-200, 500, ['Editor', 'Modifiers', 'Events', 'Playfields']);
+        UI_box = new PsychUIBox(100, gridSize*2, FlxG.width-200, 500, ['Editor', 'Events', 'Modifiers', 'Playfields']);
 		UI_box.scrollFactor.set();
         add(UI_box);
 
