@@ -45,6 +45,8 @@ import objects.StrumArrow;
 import objects.Strumline;
 import substates.MusicBeatSubState;
 
+import slushi.SlushiMain;
+
 using StringTools;
 
 class ModchartEditorEvent extends FlxSprite
@@ -345,6 +347,11 @@ class ModchartEditorState extends states.MusicBeatState
 		SLELogo.setGraphicSize(Std.int(SLELogo.width * 0.8));
 		SLELogo.antialiasing = ClientPrefs.data.antialiasing;
 		add(SLELogo);
+
+        var overlay:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height);
+        overlay.setGraphicSize(Std.int(FlxG.width), Std.int(FlxG.height));
+        add(overlay);
+        overlay.alpha = 0.7;
 
         if (PlayState.isPixelStage) //Skew Kills Pixel Notes (How are you going to stretch already pixelated bit by bit notes?)
         {
