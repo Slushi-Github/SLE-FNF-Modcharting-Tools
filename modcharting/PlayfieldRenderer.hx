@@ -19,9 +19,7 @@ import flixel.FlxCamera;
 import flixel.util.FlxSort;
 
 import flixel.FlxG;
-import managers.*;
 import flixel.system.FlxAssets.FlxShader;
-import managers.TweenManager;
 import states.PlayState;
 import objects.Note;
 import objects.StrumArrow;
@@ -51,7 +49,7 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
 
     public var eventManager:ModchartEventManager;
     public var modifierTable:ModTable;
-    public var tweenManager:TweenManager = null;
+    public var tweenManager:FlxTweenManager = null;
     public var timerManager:FlxTimerManager = null;
 
     public var modchart:ModchartFile;
@@ -82,7 +80,7 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
         //fix stupid crash because the renderer in playstate is still technically null at this point and its needed for json loading
         instance.playfieldRenderer = this;
 
-        this.tweenManager = new TweenManager();
+        this.tweenManager = new FlxTweenManager();
         this.timerManager = new FlxTimerManager();
         this.eventManager = new ModchartEventManager(this);
         this.modifierTable = new ModTable(instance, this);
