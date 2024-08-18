@@ -32,18 +32,18 @@ import flixel.graphics.frames.FlxFramesCollection;
 import flixel.addons.display.FlxBackdrop;
 import flixel.addons.transition.FlxTransitionableState;
 
-import substates.MusicBeatSubState;
-import objects.Note;
-import objects.StrumArrow;
-import objects.Strumline;
-
 import modcharting.*;
 import modcharting.PlayfieldRenderer.StrumNoteType;
 import modcharting.modifiers.*;
 import modcharting.Modifier;
 import modcharting.ModchartFile;
+
 import backend.Debug;
 import backend.ui.*;
+import objects.Note;
+import objects.StrumArrow;
+import objects.Strumline;
+import substates.MusicBeatSubState;
 
 using StringTools;
 

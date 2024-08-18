@@ -2,13 +2,13 @@ package modcharting;
 
 import flixel.tweens.FlxEase;
 import flixel.math.FlxMath;
+import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.FlxG;
+import lime.math.Vector4;
+import haxe.ds.List;
 
 import states.PlayState;
 import objects.Note;
-import lime.math.Vector4;
-import haxe.ds.List;
-import flixel.group.FlxGroup.FlxTypedGroup;
 
 enum ModifierType
 {
