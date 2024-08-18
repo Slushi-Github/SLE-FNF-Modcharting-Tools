@@ -12,7 +12,9 @@ import sys.io.File;
 #if hscript
 import hscript.*;
 #end
+#if SScript
 import psychlua.HScript as FunkinHScript;
+#end
 using StringTools;
 
 typedef ModchartJson =

@@ -1,27 +1,18 @@
 package modcharting;
 
-import haxe.Json;
-import openfl.net.FileReference;
 import flixel.FlxG;
-#if LUA_ALLOWED
-import llua.Lua;
-import llua.LuaL;
-import llua.State;
-import llua.Convert;
-#end
-
-#if LUA_ALLOWED
-import psychlua.FunkinLua;
-import psychlua.HScript as FunkinHScript;
-#end
-
+import openfl.net.FileReference;
+import openfl.events.Event;
+import openfl.events.IOErrorEvent;
+import haxe.Json;
 import modcharting.Modifier;
 import modcharting.PlayfieldRenderer;
 import modcharting.NoteMovement;
 import modcharting.ModchartUtil;
-
-import openfl.events.Event;
-import openfl.events.IOErrorEvent;
+#if LUA_ALLOWED
+import psychlua.FunkinLua;
+import psychlua.HScript as FunkinHScript;
+#end
 
 using StringTools;
 
@@ -406,7 +397,7 @@ class ModchartFuncs
         };
         instance.playfieldRenderer.eventManager.addEvent(beat, func, args);
     }
-    
+
     public static function stepSet(step:Float, argsAsString:String)
     {
         var actualBeat = (step/4);
@@ -481,7 +472,7 @@ class ModchartFuncs
                 {
                     instance.playfieldRenderer.modifierTable.modifiers.get(name).currentValue += value;
                 }
-                else 
+                else
                 {
                     var subModCheck = name.split(':');
                     if (subModCheck.length > 1)

@@ -1,25 +1,15 @@
 package modcharting;
 
-import flixel.tweens.misc.BezierPathTween;
-import flixel.tweens.misc.BezierPathNumTween;
-import flixel.util.FlxTimer.FlxTimerManager;
-import flixel.math.FlxMath;
-import flixel.tweens.FlxTween;
-import flixel.tweens.FlxEase;
-import flixel.graphics.FlxGraphic;
-import flixel.util.FlxColor;
+import flixel.FlxG;
 import flixel.FlxStrip;
-import flixel.graphics.tile.FlxDrawTrianglesItem.DrawData;
-import openfl.geom.Vector3D;
-import flixel.util.FlxSpriteUtil;
-import flixel.graphics.frames.FlxFrame;
-import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.FlxSprite;
 import flixel.FlxCamera;
+import flixel.util.FlxTimer.FlxTimerManager;
 import flixel.util.FlxSort;
+import flixel.tweens.FlxTween;
+import flixel.group.FlxGroup.FlxTypedGroup;
+import openfl.geom.Vector3D;
 
-import flixel.FlxG;
-import flixel.system.FlxAssets.FlxShader;
 import states.PlayState;
 import objects.Note;
 import objects.StrumArrow;

@@ -3,7 +3,7 @@ package modcharting;
 import flixel.math.FlxAngle;
 import openfl.geom.Vector3D;
 
-typedef Quaternion = 
+typedef Quaternion =
 {
     var x:Float;
     var y:Float;
@@ -23,7 +23,7 @@ class SimpleQuaternion
         var sp = Math.sin(pitch * FlxAngle.TO_RAD);
         var cy = Math.cos(yaw * FlxAngle.TO_RAD);
         var sy = Math.sin(yaw * FlxAngle.TO_RAD);
-    
+
         var q:Quaternion = {x: 0, y: 0, z: 0, w:0 };
         q.w = cr * cp * cy + sr * sp * sy;
         q.x = sr * cp * cy - cr * sp * sy;
