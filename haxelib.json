@@ -5,7 +5,6 @@
     "tags": ["fnf"],
     "description": "A modchart framework for Friday Night Funkin.",
     "version": "1.0.1",
-    "classPath": "source/",
     "releasenote": "",
     "contributors": ["TheZoroForce240","UncertainProd","EdwhakKB","Vortex","Glowsoony"],
     "dependencies": {

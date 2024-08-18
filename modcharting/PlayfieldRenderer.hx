@@ -44,6 +44,7 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
 {
     public var strumGroup:Strumline;
     public var notes:FlxTypedGroup<Note>;
+    public var arrowPaths:FlxTypedGroup<ArrowPathSegment>;
     public var instance:ModchartMusicBeatState;
     public var playStateInstance:PlayState;
     public var playfields:Array<Playfield> = []; //adding an extra playfield will add 1 for each player
@@ -66,16 +67,17 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
         return modifierTable.modifiers; //back compat with lua modcharts
     }
 
-    public function new(strumGroup:Strumline, notes:FlxTypedGroup<Note>, instance:ModchartMusicBeatState)
+    public function new(instance:ModchartMusicBeatState, strumGroup:Strumline, notes:FlxTypedGroup<Note>, ?linePaths:FlxTypedGroup<ArrowPathSegment>)
     {
         super(0,0);
         this.strumGroup = strumGroup;
         this.notes = notes;
+        if (linePaths != null) this.arrowPaths = linePaths;
         this.instance = instance;
         if (Std.isOfType(instance, PlayState)) playStateInstance = cast instance; //so it just casts once
 
-        this.strumGroup.visible = false; //drawing with renderer instead
-        this.notes.visible = false;
+        this.strumGroup.visible = this.notes.visible = false; //drawing with renderer instead
+        if (this.arrowPaths != null) this.arrowPaths.visible = false;
 
         //fix stupid crash because the renderer in playstate is still technically null at this point and its needed for json loading
         instance.playfieldRenderer = this;
@@ -115,6 +117,9 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
             this.eventManager.update(elapsed);
             this.tweenManager.update(elapsed); //should be automatically paused when you pause in game
             this.timerManager.update(elapsed);
+
+            // for (note in this.notes) note.updateObjectPosition(note);
+            // for (strum in this.strumGroup) strum.updateObjectPosition(strum);
         } catch(e) {
             trace(e);
         }
@@ -125,6 +130,13 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
     {
         try {
             this.modifierTable.update(elapsed);
+            if (this.arrowPaths != null)
+            {
+                for (path in this.arrowPaths)
+                {
+                    path.updateCapture(elapsed);
+                }
+            }
         } catch(e) {
             trace(e);
         }
@@ -167,12 +179,23 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
         strum.scale.y = strumData.scaleY;
         strum.skew.x = strumData.skewX;
         strum.skew.y = strumData.skewY;
-        strum.strumPositionData = strumData;
 
         strum.rgbShader.stealthGlow = strumData.stealthGlow;
         strum.rgbShader.stealthGlowRed = strumData.glowRed;
         strum.rgbShader.stealthGlowGreen = strumData.glowGreen;
         strum.rgbShader.stealthGlowBlue = strumData.glowBlue;
+
+        strum.scaleX = strumData.scaleX;
+        strum.scaleY = strumData.scaleY;
+        strum.scaleZ = strumData.scaleZ;
+
+        strum.skewX = strumData.skewX;
+        strum.skewY = strumData.skewY;
+        strum.skewZ = strumData.skewZ;
+
+        strum.angleX = strumData.angleX;
+        strum.angleY = strumData.angleY;
+        strum.angleZ = strumData.angleZ;
     }
     private function getDataForStrum(i:Int, pf:Int):NotePositionData
     {
@@ -206,13 +229,24 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
         daNote.scale.y = noteData.scaleY;
         daNote.skew.x = noteData.skewX;
         daNote.skew.y = noteData.skewY;
-        daNote.notePositionData = noteData;
         daNote.noteScrollSpeed = this.getCorrectScrollSpeed();
 
         daNote.rgbShader.stealthGlow = noteData.stealthGlow;
         daNote.rgbShader.stealthGlowRed = noteData.glowRed;
         daNote.rgbShader.stealthGlowGreen = noteData.glowGreen;
         daNote.rgbShader.stealthGlowBlue = noteData.glowBlue;
+
+        daNote.scaleX = noteData.scaleX;
+        daNote.scaleY = noteData.scaleY;
+        daNote.scaleZ = noteData.scaleZ;
+
+        daNote.skewX = noteData.skewX;
+        daNote.skewY = noteData.skewY;
+        daNote.skewZ = noteData.skewZ;
+
+        daNote.angleX = noteData.angleX;
+        daNote.angleY = noteData.angleY;
+        daNote.angleZ = noteData.angleZ;
     }
     private function createDataFromNote(noteIndex:Int, playfieldIndex:Int, curPos:Float, noteDist:Float, incomingAngle:Array<Float>):NotePositionData
     {
@@ -348,6 +382,10 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
             return;
         var changeX:Bool = ((noteData.z > 0 || noteData.z < 0) && noteData.z != 0);
         var strumNote:StrumNoteType = this.strumGroup.members[noteData.index];
+         if (strumNote.initialized == false && strumNote.hasSetupRender == false){
+            strumNote.initialized = true;
+            strumNote.setUpThreeDRender();
+        }
         var thisNotePos:Vector3D = changeX ?
             ModchartUtil.calculatePerspective(new Vector3D(noteData.x+(strumNote.width/2), noteData.y+(strumNote.height/2), noteData.z*0.001),
             ModchartUtil.defaultFOV*(Math.PI/180), -(strumNote.width/2), -(strumNote.height/2))
@@ -361,6 +399,40 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
         }
         if (noteData.stealthGlow != 0) strumGroup.members[noteData.index].rgbShader.enabled = true; //enable stealthGlow once it finds its not 0?
 
+        if (noteData.angleX != 0 || noteData.angleY != 0 || noteData.skewZ != 0 || noteData.skewX != 0 || noteData.skewY != 0) strumNote.drawManual = true;
+        else strumNote.drawManual = false;
+
+        if (strumNote.drawManual){
+            strumNote.scaleX = noteData.scaleX;
+            strumNote.scaleY = noteData.scaleY;
+            strumNote.scaleZ = noteData.scaleZ;
+
+            strumNote.skewX = noteData.skewX;
+            strumNote.skewY = noteData.skewY;
+            strumNote.skewZ = noteData.skewZ;
+            strumNote.skewX_offset = noteData.skewX_offset;
+            strumNote.skewY_offset = noteData.skewY_offset;
+            strumNote.skewZ_offset = noteData.skewZ_offset;
+
+            strumNote.fovOffsetX = noteData.fovOffsetX;
+            strumNote.fovOffsetY = noteData.fovOffsetY;
+
+            strumNote.pivotOffsetX = noteData.pivotOffsetX;
+            strumNote.pivotOffsetY = noteData.pivotOffsetY;
+            strumNote.pivotOffsetZ = noteData.pivotOffsetZ;
+
+            strumNote.angleX = noteData.angleX;
+            strumNote.angleY = noteData.angleY;
+            strumNote.angleZ = noteData.angle;
+
+            strumNote.offset = strumNote.offset;
+        }else{
+            strumNote.skew.x = noteData.skewX;
+            strumNote.skew.y = noteData.skewY;
+        }
+
+        strumNote.strumPositionData = noteData;
+
         this.addDataToStrum(noteData, this.strumGroup.members[noteData.index]); //set position and stuff before drawing
         if (cameraToDraw == null)
         {
@@ -372,7 +444,14 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
             if (cameraToDraw != null) this.strumGroup.members[noteData.index].camera = cameraToDraw;
             else this.strumGroup.members[noteData.index].camera = strumNote.camera;
         }
-        //draw strums
+        if (strumNote.drawManual)
+        {
+            this.strumGroup.members[noteData.index].updateTris();
+            if (this.arrowPaths != null)
+            {
+                this.arrowPaths.members[noteData.index].cameras = strumNote.cameras;
+            }
+        }
         this.strumGroup.members[noteData.index].draw();
     }
     private function drawNote(noteData:NotePositionData, cameraToDraw:FlxCamera, camerasToDraw:Array<FlxCamera>)
@@ -381,6 +460,10 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
             return;
         var changeX:Bool = ((noteData.z > 0 || noteData.z < 0) && noteData.z != 0);
         var daNote:Note = this.notes.members[noteData.index];
+        if (daNote.initialized == false && daNote.hasSetupRender == false){
+            daNote.initialized = true;
+            daNote.setUpThreeDRender();
+        }
         var thisNotePos:Vector3D = changeX ?
             ModchartUtil.calculatePerspective(new Vector3D(noteData.x+(daNote.width/2)+ModchartUtil.getNoteOffsetX(daNote, instance), noteData.y+(daNote.height/2), noteData.z*0.001),
             ModchartUtil.defaultFOV*(Math.PI/180), -(daNote.width/2), -(daNote.height/2))
@@ -392,9 +475,45 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
             noteData.scaleX *= (1/-thisNotePos.z);
             noteData.scaleY *= (1/-thisNotePos.z);
         }
+
         // noteData.skewX = skewX + noteData.skewX;
         // noteData.skewY = skewY + noteData.skewY;
         //set note position using the position data
+
+         if (noteData.angleX != 0 || noteData.angleY != 0 || noteData.skewZ != 0 || noteData.skewX != 0 || noteData.skewY != 0) daNote.drawManual = true;
+        else daNote.drawManual = false;
+
+        if (daNote.drawManual){
+            daNote.scaleX = noteData.scaleX;
+            daNote.scaleY = noteData.scaleY;
+            daNote.scaleZ = noteData.scaleZ;
+
+            daNote.skewX = noteData.skewX;
+            daNote.skewY = noteData.skewY;
+            daNote.skewZ = noteData.skewZ;
+            daNote.skewX_offset = noteData.skewX_offset;
+            daNote.skewY_offset = noteData.skewY_offset;
+            daNote.skewZ_offset = noteData.skewZ_offset;
+
+            daNote.fovOffsetX = noteData.fovOffsetX;
+            daNote.fovOffsetY = noteData.fovOffsetY;
+
+            daNote.pivotOffsetX = noteData.pivotOffsetX;
+            daNote.pivotOffsetY = noteData.pivotOffsetY;
+            daNote.pivotOffsetZ = noteData.pivotOffsetZ;
+
+            daNote.angleX = noteData.angleX;
+            daNote.angleY = noteData.angleY;
+            daNote.angleZ = noteData.angle;
+
+            daNote.offset = daNote.offset;
+        }else{
+            daNote.skew.x = noteData.skewX;
+            daNote.skew.y = noteData.skewY;
+        }
+
+        daNote.notePositionData = noteData;
+
         this.addDataToNote(noteData, this.notes.members[noteData.index]);
         if (cameraToDraw == null)
         {
@@ -404,7 +523,8 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
             if (cameraToDraw != null) this.notes.members[noteData.index].camera = cameraToDraw;
             else this.notes.members[noteData.index].camera = daNote.camera;
         }
-        //draw it
+
+        if (daNote.drawManual) this.notes.members[noteData.index].updateTris();
         this.notes.members[noteData.index].draw();
     }
     private function drawSustainNote(noteData:NotePositionData, cameraToDraw:FlxCamera, camerasToDraw:Array<FlxCamera>)
@@ -491,7 +611,6 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
         var daNote:Note = this.notes.members[noteData.index];
         var lane:Int = noteData.lane;
         var pf:Int = noteData.playfieldIndex;
-        daNote.notePositionData = noteData;
 
         var noteDist:Float = getNoteDist(noteData.index);
         var curPos:Float = getNoteCurPos(noteData.index, timeOffset, noteDist);
@@ -525,11 +644,7 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
 
     public function getCorrectScrollSpeed():Float
     {
-        if (inEditor)
-            return setRendererSpeed != null ? setRendererSpeed : PlayState.SONG?.speed ?? 1.0; //just use this while in editor so the instance shit works
-        else
-            return setRendererSpeed != null ? setRendererSpeed : ModchartUtil.getScrollSpeed(playStateInstance);
-        return 1.0;
+        return (setRendererSpeed != null ? setRendererSpeed : PlayState.SONG.speed);
     }
 
     public function createTween(Object:Dynamic, Values:Dynamic, Duration:Float, ?Options:TweenOptions):FlxTween
@@ -547,18 +662,18 @@ class PlayfieldRenderer extends FlxSprite //extending flxsprite just so i can ed
     }
 
     public function createBezierPathTween(Object:Dynamic, Values:Dynamic, Duration:Float, ?Options:TweenOptions):FlxTween
-        {
-            var tween:FlxTween = tweenManager.bezierPathTween(Object, Values, Duration, Options);
-            tween.manager = tweenManager;
-            return tween;
-        }
+    {
+        var tween:FlxTween = tweenManager.bezierPathTween(Object, Values, Duration, Options);
+        tween.manager = tweenManager;
+        return tween;
+    }
 
     public function createBezierPathNumTween(Points:Array<Float>, Duration:Float, ?Options:TweenOptions, ?TweenFunction:Float->Void):FlxTween
-        {
-            var tween:FlxTween = tweenManager.bezierPathNumTween(Points, Duration, Options,TweenFunction);
-            tween.manager = tweenManager;
-            return tween;
-        }
+    {
+        var tween:FlxTween = tweenManager.bezierPathNumTween(Points, Duration, Options,TweenFunction);
+        tween.manager = tweenManager;
+        return tween;
+    }
 
     override public function destroy()
     {

@@ -85,13 +85,13 @@ class ModchartEditorState extends states.MusicBeatState
      */
     public static var defaultModifiers:Array<Class<Modifier>> = [
         //Basic Modifiers with no curpos math
-        XModifier, YModifier, YDModifier, ZModifier, ConfusionModifier,
+        XModifier, YModifier, YDModifier, ZModifier, ConfusionModifier, ConfusionXModifier, ConfusionYModifier,
         ScaleModifier, ScaleXModifier, ScaleYModifier,
-        SkewModifier, SkewXModifier, SkewYModifier,
+        SkewModifier, SkewXModifier, SkewYModifier, SkewXOffsetModifier, SkewYOffsetModifier, SkewZOffsetModifier,
         MiniModifier,
         //Modifiers with curpos math!!!
         //Drunk Modifiers
-        DrunkXModifier, DrunkYModifier, DrunkZModifier, DrunkAngleModifier,
+         DrunkXModifier, DrunkYModifier, DrunkZModifier, DrunkAngleModifier,
         DrunkScaleModifier,  DrunkScaleXModifier, DrunkScaleYModifier,
         DrunkSkewModifier,  DrunkSkewXModifier, DrunkSkewYModifier,
         TanDrunkXModifier, TanDrunkYModifier, TanDrunkZModifier, TanDrunkAngleModifier,
@@ -101,7 +101,7 @@ class ModchartEditorState extends states.MusicBeatState
         CosecantScaleModifier, CosecantScaleXModifier, CosecantScaleYModifier,
         CosecantSkewModifier, CosecantSkewXModifier, CosecantSkewYModifier,
         //Tipsy Modifiers
-        TipsyXModifier, TipsyYModifier, TipsyZModifier, TipsyAngleModifier,
+         TipsyXModifier, TipsyYModifier, TipsyZModifier, TipsyAngleModifier,
         TipsyScaleModifier, TipsyScaleXModifier, TipsyScaleYModifier,
         TipsySkewModifier, TipsySkewXModifier, TipsySkewYModifier,
         //Wave Modifiers
@@ -112,17 +112,17 @@ class ModchartEditorState extends states.MusicBeatState
         TanWaveScaleModifier, TanWaveScaleXModifier, TanWaveScaleYModifier,
         TanWaveSkewModifier, TanWaveSkewXModifier, TanWaveSkewYModifier,
         //Scroll Modifiers
-        ReverseModifier, CrossModifier, SplitModifier, AlternateModifier,
+         ReverseModifier, CrossModifier, SplitModifier, AlternateModifier,
         SpeedModifier, BoostModifier, BrakeModifier, BoomerangModifier, WaveingModifier,
         TwirlModifier, RollModifier,
         //Stealth Modifiers
-        AlphaModifier, NoteAlphaModifier, TargetAlphaModifier,
+         AlphaModifier, NoteAlphaModifier, TargetAlphaModifier,
         StealthModifier, DarkModifier, StealthColorModifier, DarkColorModifier, SDColorModifier,
         SuddenModifier, HiddenModifier, VanishModifier, BlinkModifier,
         //Path Modifiers
         IncomingAngleModifier, InvertSineModifier, DizzyModifier,
         //Tornado Modifiers
-        TornadoModifier, TornadoYModifier, TornadoZModifier, TornadoAngleModifier,
+         TornadoModifier, TornadoYModifier, TornadoZModifier, TornadoAngleModifier,
         TornadoScaleModifier, TornadoScaleXModifier, TornadoScaleYModifier,
         TornadoSkewModifier, TornadoSkewXModifier, TornadoSkewYModifier,
         TanTornadoModifier, TanTornadoYModifier, TanTornadoZModifier, TanTornadoAngleModifier,
@@ -163,7 +163,7 @@ class ModchartEditorState extends states.MusicBeatState
         SquareScaleModifier, SquareScaleXModifier, SquareScaleYModifier,
         SquareSkewModifier, SquareSkewXModifier, SquareSkewYModifier,
         //Target Modifiers
-        RotateModifier, StrumLineRotateModifier, JumpTargetModifier,
+        RotateModifier, StrumLineRotateModifier, Rotate3DModifier, JumpTargetModifier,
         LanesModifier,
         //Notes Modifiers
         TimeStopModifier, JumpNotesModifier,
@@ -179,11 +179,17 @@ class ModchartEditorState extends states.MusicBeatState
         AttenuateModifier, AttenuateYModifier, AttenuateZModifier, AttenuateAngleModifier,
         AttenuateScaleModifier, AttenuateScaleXModifier, AttenuateScaleYModifier,
         AttenuateSkewModifier, AttenuateSkewXModifier, AttenuateSkewYModifier,
+        //Pivot Modifiers,
+        PivotXOffsetModifier, PivotYOffsetModifier, PivotZOffsetModifier,
+        //Fov Modifiers
+        FovXOffsetModifier, FovYOffsetModifier,
         //misc
         ShakyNotesModifier, ParalysisModifier, SpiralHoldsModifier,
         ArrowPath,
         //custom
-        StrumCircleModifier, StrumBounceModifier
+        StrumCircleModifier, StrumBounceModifier,
+        //Lines
+        LineAlphaModifier, LineLengthForwardModifier, LineLengthBackwardModifier, LineGrainModifier
     ];
 
     public static var easeList:Array<String> = [
@@ -271,12 +277,13 @@ class ModchartEditorState extends states.MusicBeatState
 
     public var camHUD:FlxCamera;
 	public var camGame:FlxCamera;
-    public var notes:FlxTypedGroup<Note>;
+    public var notes:FlxTypedGroup<Note> = new FlxTypedGroup<Note>();
+    public var arrowPaths:FlxTypedGroup<ArrowPathSegment> = new FlxTypedGroup<ArrowPathSegment>();
 
     private var strumLine:FlxSprite;
-    public var strumLineNotes:Strumline;
-	public var opponentStrums:Strumline;
-	public var playerStrums:Strumline;
+    public var strumLineNotes:Strumline = new Strumline(8);
+	public var opponentStrums:Strumline = new Strumline(4);
+	public var playerStrums:Strumline = new Strumline(4);
 
 	public var unspawnNotes:Array<Note> = [];
     public var loadedNotes:Array<Note> = []; //stored notes from the chart that unspawnNotes can copy from
@@ -352,21 +359,17 @@ class ModchartEditorState extends states.MusicBeatState
         if(ModchartUtil.getDownscroll(this)) strumLine.y = FlxG.height - 150;
 
 		strumLine.scrollFactor.set();
-
-        strumLineNotes = new Strumline(8);
+        add(arrowPaths);
 		add(strumLineNotes);
-
-		opponentStrums = new Strumline(4);
-		playerStrums = new Strumline(4);
 
 		generateSong();
 
-		playfieldRenderer = new PlayfieldRenderer(strumLineNotes, notes, this);
-		playfieldRenderer.camera = camHUD;
+		playfieldRenderer = new PlayfieldRenderer(this, strumLineNotes, notes, arrowPaths);
+		playfieldRenderer.cameras = [camHUD];
         playfieldRenderer.inEditor = true;
 		add(playfieldRenderer);
 
-        strumLineNotes.camera = notes.camera = camHUD;
+        strumLineNotes.cameras = notes.cameras = arrowPaths.cameras =  [camHUD];
 
         #if ("flixel-addons" >= "3.0.0")
         grid = new FlxBackdrop(FlxGraphic.fromBitmapData(createGrid(gridSize, gridSize, FlxG.width, gridSize)), FlxAxes.X, 0, 0);
@@ -652,6 +655,7 @@ class ModchartEditorState extends states.MusicBeatState
                 if (PlayState.SONG != null && !PlayState.SONG.options.disableStrumRGB)
                 {
                     spr.rgbShader.r = daNote.rgbShader.r;
+                    spr.rgbShader.g = daNote.rgbShader.g;
                     spr.rgbShader.b = daNote.rgbShader.b;
                 }
                 if (!daNote.isSustainNote)
@@ -674,6 +678,7 @@ class ModchartEditorState extends states.MusicBeatState
                     } else {
                         spr = playerStrums.members[daNote.noteData];
                         if (daNote.isSustainNote && daNote.isHoldEnd) spr.playAnim('static', true);
+                        else spr.playAnim('static', true);
                     }
                 }
                 daNote.active = false;
@@ -1136,6 +1141,7 @@ class ModchartEditorState extends states.MusicBeatState
             var babyArrow:StrumArrow = new StrumArrow(TRUE_STRUM_X, strumLine.y, i, player, PlayState.SONG.options.arrowSkin);
             babyArrow.downScroll = ClientPrefs.data.downScroll;
             babyArrow.alpha = targetAlpha;
+            babyArrow.loadLineSegment();
 
             var middleScroll:Bool = false;
             middleScroll = ClientPrefs.data.middleScroll;
@@ -1161,6 +1167,7 @@ class ModchartEditorState extends states.MusicBeatState
             }
 
             strumLineNotes.add(babyArrow);
+            if (babyArrow.lineSegment != null) arrowPaths.add(babyArrow.lineSegment);
             babyArrow.postAddedToGroup();
         }
     }
@@ -2359,6 +2366,7 @@ class ModchartEditorExitSubstate extends MusicBeatSubState
             close();
         });
         goBackButton.x = (FlxG.width*0.3)-(goBackButton.width*0.5);
+        goBackButton.resize(200, 140);
         add(goBackButton);
 
         var exit:PsychUIButton = new PsychUIButton(0, 500, 'Exit without saving', function()
@@ -2366,6 +2374,7 @@ class ModchartEditorExitSubstate extends MusicBeatSubState
             exitFunc();
         });
         exit.x = (FlxG.width*0.7)-(exit.width*0.5);
+        exit.resize(200, 140);
         add(exit);
 
         cameras = [FlxG.cameras.list[FlxG.cameras.list.length-1]];

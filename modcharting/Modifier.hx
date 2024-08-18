@@ -818,6 +818,47 @@ class StrumLineRotateModifier extends Modifier
         currentValue = 1.0;
     }
 }
+class Rotate3DModifier extends Modifier
+{
+    override function setupInformation()
+    {
+        subValues.set('x', new ModifierSubValue(0.0));
+        subValues.set('y', new ModifierSubValue(0.0));
+
+        subValues.set('rotatePointX', new ModifierSubValue((FlxG.width/2)-(NoteMovement.arrowSize/2)));
+        subValues.set('rotatePointY', new ModifierSubValue((FlxG.height/2)-(NoteMovement.arrowSize/2)));
+        currentValue = 1.0;
+    }
+
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        var xPos = NoteMovement.defaultStrumX[lane];
+        var yPos = NoteMovement.defaultStrumY[lane];
+        var rotX = ModchartUtil.getCartesianCoords3D(-subValues.get('x').value, 90, xPos-subValues.get('rotatePointX').value);
+        noteData.x += rotX.x+subValues.get('rotatePointX').value-xPos;
+        var rotY = ModchartUtil.getCartesianCoords3D(90, subValues.get('y').value, yPos-subValues.get('rotatePointY').value);
+        noteData.y += rotY.y+subValues.get('rotatePointY').value-yPos;
+        noteData.z += rotX.z + rotY.z;
+
+        noteData.angleY += subValues.get('x').value;
+        noteData.angleX += subValues.get('y').value;
+    }
+    override function incomingAngleMath(lane:Int, curPos:Float, pf:Int)
+    {
+        var multiply:Bool = subValues.get('y').value%180 != 0; //so it calculates the stuff ONLY if angle its not 180/360 base
+        var valueToUse:Float = multiply ? 90 : 0;
+        return [valueToUse, subValues.get('y').value]; //ik this might cause problems at some point with some modifiers but eh, there is nothing i could do about it- (i can LMAO)
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteMath(noteData, lane, 0, pf);
+    }
+    override function reset()
+    {
+        super.reset();
+        currentValue = 1.0;
+    }
+}
 
 class BumpyXModifier extends Modifier
 {
@@ -1081,13 +1122,45 @@ class ZModifier extends Modifier
 }
 class ConfusionModifier extends Modifier //note angle
 {
+    override function setupInformation()
+    {
+        subValues.set('force', new ModifierSubValue(1.0));
+    }
     override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
     {
-        noteData.angle += currentValue;
+        var scrollSwitch = -1;
+        if (instance != null)
+            if (ModchartUtil.getDownscroll(instance))
+                scrollSwitch *= -1;
+
+        if (subValues.get('force').value >= 0.5) noteData.angle += currentValue;
+        else noteData.angle += currentValue * scrollSwitch; //forced as default now to fix upscroll and downscroll modcharts that uses angle (no need for z and x, just angle and y)
     }
     override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
     {
         noteData.angle += currentValue;
+    }
+}
+class ConfusionXModifier extends Modifier
+{
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        noteData.angleX += currentValue;
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteData.angleX += currentValue;
+    }
+}
+class ConfusionYModifier extends Modifier
+{
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        noteData.angleY += currentValue;
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteData.angleY += currentValue;
     }
 }
 
@@ -2596,9 +2669,14 @@ class SkewYModifier extends Modifier
 
 class DizzyModifier extends Modifier
 {
+    override function setupInformation()
+    {
+        subValues.set('forced', new ModifierSubValue(0.0));
+    }
     override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
     {
-        noteData.angle += currentValue*curPos;
+        if (subValues.get('forced').value >= 0.5) noteData.angle += currentValue*(Conductor.songPosition*0.001);
+        else noteData.angle += currentValue*curPos;
     }
 }
 
@@ -3120,22 +3198,24 @@ class TwirlModifier extends Modifier
 {
     override function setupInformation()
     {
-        subValues.set('speed', new ModifierSubValue(1.0));
+        subValues.set('forced', new ModifierSubValue(0.0));
     }
     override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
     {
-        noteData.scaleX *=(0+(currentValue*FlxMath.fastCos(((curPos*0.001)*(5*subValues.get('speed').value)))));
+                if (subValues.get('forced').value >= 0.5) noteData.angleX += (Conductor.songPosition*0.001) * currentValue;
+        else noteData.angleY += (curPos / 2.0) * currentValue;
     }
 }
 class RollModifier extends Modifier
 {
     override function setupInformation()
     {
-        subValues.set('speed', new ModifierSubValue(1.0));
+        subValues.set('forced', new ModifierSubValue(0.0));
     }
     override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
     {
-        noteData.scaleY *=(0+(currentValue*FlxMath.fastCos(((curPos*0.001)*(5*subValues.get('speed').value)))));
+        if (subValues.get('forced').value >= 0.5) noteData.angleY += (Conductor.songPosition*0.001) * currentValue;
+        else noteData.angleX += (curPos / 2.0) * currentValue;
     }
 }
 
@@ -4515,6 +4595,99 @@ class AttenuateSkewYModifier extends Modifier
 }
 
 
+class PivotXOffsetModifier extends Modifier
+{
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        noteData.pivotOffsetX += currentValue;
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteMath(noteData, lane, 0, pf);
+    }
+}
+class PivotYOffsetModifier extends Modifier
+{
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        noteData.pivotOffsetY += currentValue;
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteMath(noteData, lane, 0, pf);
+    }
+}
+class PivotZOffsetModifier extends Modifier
+{
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        noteData.pivotOffsetZ += currentValue;
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteMath(noteData, lane, 0, pf);
+    }
+}
+
+class SkewXOffsetModifier extends Modifier
+{
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        noteData.skewX_offset += currentValue;
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteMath(noteData, lane, 0, pf);
+    }
+}
+class SkewYOffsetModifier extends Modifier
+{
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        noteData.skewY_offset += currentValue;
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteMath(noteData, lane, 0, pf);
+    }
+}
+class SkewZOffsetModifier extends Modifier
+{
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        noteData.skewZ_offset += currentValue;
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteMath(noteData, lane, 0, pf);
+    }
+}
+
+class FovXOffsetModifier extends Modifier
+{
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        noteData.fovOffsetX += currentValue;
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteMath(noteData, lane, 0, pf);
+    }
+}
+class FovYOffsetModifier extends Modifier
+{
+    override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
+    {
+        noteData.fovOffsetY += currentValue;
+    }
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteMath(noteData, lane, 0, pf);
+    }
+}
+
+
+
 // class StraightHoldsModifier extends Modifier //unused
 // {
 //     override function noteMath(noteData:NotePositionData, lane:Int, curPos:Float, pf:Int)
@@ -4540,6 +4713,62 @@ class AttenuateSkewYModifier extends Modifier
 //         //if else then nothing??
 //     }
 // }
+
+class LineAlphaModifier extends Modifier
+{
+    override function setupInformation()
+    {
+        baseValue = 0;
+        currentValue = 0;
+    }
+
+    override public function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteData.arrowPathAlpha += currentValue;
+    }
+}
+
+class LineLengthForwardModifier extends Modifier
+{
+    override function setupInformation()
+    {
+        baseValue = 0;
+        currentValue = 0;
+    }
+
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteData.arrowPathLength += currentValue;
+    }
+}
+
+class LineLengthBackwardModifier extends Modifier
+{
+    override function setupInformation()
+    {
+        baseValue = 0;
+        currentValue = 0;
+    }
+
+    override function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteData.arrowPathBackwardsLength += currentValue;
+    }
+}
+
+class LineGrainModifier extends Modifier
+{
+    override function setupInformation()
+    {
+        baseValue = 0;
+        currentValue = 0;
+    }
+
+    override public function strumMath(noteData:NotePositionData, lane:Int, pf:Int)
+    {
+        noteData.pathGrain += currentValue;
+    }
+}
 
 //OH MY FUCKING GOD, thanks to @noamlol for the code of this thing//
 class ArrowPath extends Modifier {

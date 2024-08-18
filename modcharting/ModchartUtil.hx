@@ -2,6 +2,7 @@ package modcharting;
 
 import flixel.math.FlxMath;
 import flixel.math.FlxAngle;
+import lime.math.Vector2;
 import openfl.geom.Vector3D;
 import flixel.FlxG;
 
@@ -12,43 +13,18 @@ using StringTools;
 
 class ModchartUtil
 {
-    public static function getDownscroll(instance:ModchartMusicBeatState):Bool
-    {
-        //need to test each engine
-        //not expecting all to work
-        return ClientPrefs.data.downScroll;
-    }
-    public static function getMiddlescroll(instance:ModchartMusicBeatState):Bool
-    {
-        return ClientPrefs.data.middleScroll;
-    }
-    public static function getScrollSpeed(instance:PlayState):Float
-    {
-        if (instance == null)
-            return PlayState.SONG.speed;
-
-        return PlayState.instance?.songSpeed; //most engines just use this
-    }
-
+    //need to test each engine
+    //not expecting all to work
+    public static function getDownscroll(instance:ModchartMusicBeatState):Bool return ClientPrefs.data.downScroll;
+    public static function getMiddlescroll(instance:ModchartMusicBeatState):Bool return ClientPrefs.data.middleScroll;
+    // public static function getScrollSpeed(instance:PlayState):Float
+    //     return instance == null ? PlayState.SONG.speed : PlayState.instance?.songSpeed ?? PlayState.SONG.speed; //most engines just use this
     public static function getIsPixelNotes(instance:ModchartMusicBeatState):Bool
-    {
-        if (instance == null)
-            return false;
-        return PlayState.isPixelNotes;
-    }
-
-
+        return instance == null ? false : PlayState.isPixelNotes;
     public static function getIsPixelStage(instance:ModchartMusicBeatState):Bool
-    {
-        if (instance == null)
-            return false;
-        return PlayState.isPixelStage;
-    }
-
+        return instance == null ? false : PlayState.isPixelStage;
     public static function getNoteOffsetX(daNote:Note, instance:ModchartMusicBeatState):Float
-    {
         return daNote.offsetX;
-    }
 
     static var currentFakeCrochet:Float = -1;
     static var lastBpm:Float = -1;
@@ -61,7 +37,6 @@ class ModchartUtil
             lastBpm = PlayState.SONG.bpm;
         }
         return currentFakeCrochet;
-
     }
 
     public static var zNear:Float = 0;
@@ -139,6 +114,27 @@ class ModchartUtil
         return pos;
     }
 
+    public static function rotateAround(origin:Vector2, point:Vector2, degrees:Float):Vector2
+    {
+        // public function rotateAround(origin, point, degrees):FlxBasePoint{
+        // public function rotateAround(origin, point, degrees){
+        var angle:Float = degrees * (Math.PI / 180);
+        var ox = origin.x;
+        var oy = origin.y;
+        var px = point.x;
+        var py = point.y;
+
+        var qx = ox + FlxMath.fastCos(angle) * (px - ox) - FlxMath.fastSin(angle) * (py - oy);
+        var qy = oy + FlxMath.fastSin(angle) * (px - ox) + FlxMath.fastCos(angle) * (py - oy);
+
+        // point.x = qx;
+        // point.y = qy;
+
+        return (new Vector2(qx, qy));
+        // return FlxBasePoint.weak(qx, qy);
+        // return qx, qy;
+    }
+
     public static function getTimeFromBeat(beat:Float):Float
     {
         var totalTime:Float = 0;
@@ -155,12 +151,11 @@ class ModchartUtil
                         curBpm = Conductor.bpmChangeMap[j].bpm;
                 }
             }
-            totalTime += (60/curBpm)*1000;
+            totalTime += 60000/curBpm;
         }
 
         var leftOverBeat = beat - Math.floor(beat);
-        totalTime += (60/curBpm)*1000*leftOverBeat;
-
+        totalTime += (15000 * leftOverBeat) / curBpm;
         return totalTime;
     }
 }

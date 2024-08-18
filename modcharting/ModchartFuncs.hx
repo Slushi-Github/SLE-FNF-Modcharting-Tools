@@ -78,7 +78,7 @@ class ModchartFuncs
         funk.set('setAdd', function(beat:Float, argsAsString:String){
             setAdd(beat, argsAsString);
         });
-        funk.set('add', function(beat:Float, time:Float, easeStr:String, argsAsString:String){
+        funk.set('easeAdd', function(beat:Float, time:Float, easeStr:String, argsAsString:String){
             add(beat, time, easeStr, argsAsString);
         });
         funk.set('getMod', function(name:String, base:Bool = false){

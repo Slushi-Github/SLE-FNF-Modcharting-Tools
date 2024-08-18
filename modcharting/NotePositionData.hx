@@ -14,8 +14,10 @@ class NotePositionData implements IFlxDestroyable
     public var alpha:Float;
     public var scaleX:Float;
     public var scaleY:Float;
+    public var scaleZ:Float;
     public var skewX:Float;
     public var skewY:Float;
+    public var skewZ:Float;
     public var curPos:Float;
     public var noteDist:Float;
     public var lane:Int;
@@ -38,6 +40,22 @@ class NotePositionData implements IFlxDestroyable
     public var pathGrain:Float = 0;
 
     public var spiralHold:Float = 0;
+
+    public var angleX:Float = 0;
+    public var angleY:Float = 0;
+    public var angleZ:Float = 0;
+
+    public var skewX_offset:Float = 0.5;
+    public var skewY_offset:Float = 0.5;
+    public var skewZ_offset:Float = 0.5;
+
+    public var fovOffsetX:Float = 0;
+    public var fovOffsetY:Float = 0;
+
+    public var pivotOffsetX:Float = 0;
+    public var pivotOffsetY:Float = 0;
+    public var pivotOffsetZ:Float = 0;
+
     // public var pathColor:StringTools.hex();
 
     // public var straightHold:Float;
@@ -56,9 +74,11 @@ class NotePositionData implements IFlxDestroyable
         this.angle = 0;
         this.alpha = 1;
         this.scaleX = scaleX;
-        this.scaleY = scaleY;
+         this.scaleY = scaleY;
+        this.scaleZ = 1;
         this.skewX = skewX;
         this.skewY = skewY;
+        this.skewZ = 0;
         this.index = lane;
         this.playfieldIndex = pf;
         this.lane = lane;
@@ -81,6 +101,21 @@ class NotePositionData implements IFlxDestroyable
         this.pathGrain = 0;
 
         this.spiralHold = 0;
+
+        this.angleX = 0;
+        this.angleY = 0;
+        this.angleZ = 0;
+
+        this.skewX_offset = 0.5;
+        this.skewY_offset = 0.5;
+        this.skewZ_offset = 0.5;
+
+        this.fovOffsetX = 0;
+        this.fovOffsetY = 0;
+
+        this.pivotOffsetX = 0;
+        this.pivotOffsetY = 0;
+        this.pivotOffsetZ = 0;
         // this.pathColor = "000000";
 
         // this.straightHold = 0; //why tf does a strum need a damn "straightHold" value XD?
@@ -94,9 +129,11 @@ class NotePositionData implements IFlxDestroyable
         this.angle = 0;
         this.alpha = alpha;
         this.scaleX = scaleX;
-        this.scaleY = scaleY;
+         this.scaleY = scaleY;
+        this.scaleZ = 1;
         this.skewX = skewX;
-        this.skewY = skewY;
+         this.skewY = skewY;
+        this.skewZ = 0;
         this.index = index;
         this.playfieldIndex = pf;
         this.lane = lane;
@@ -119,6 +156,22 @@ class NotePositionData implements IFlxDestroyable
         this.pathGrain = 0;
 
         this.spiralHold = 0;
+
+        this.angleX = 0;
+        this.angleY = 0;
+        this.angleZ = 0;
+
+        this.skewX_offset = 0.5;
+        this.skewY_offset = 0.5;
+        this.skewZ_offset = 0.5;
+
+        this.fovOffsetX = 0;
+        this.fovOffsetY = 0;
+
+        this.pivotOffsetX = 0;
+        this.pivotOffsetY = 0;
+        this.pivotOffsetZ = 0;
+
         // this.pathColor = "000000";
 
         // this.straightHold = 0; //different to up this doesn't break shit LOL

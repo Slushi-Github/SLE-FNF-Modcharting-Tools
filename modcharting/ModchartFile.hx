@@ -239,8 +239,7 @@ class ModchartFile
         var json:ModchartJson = null;
         if (rawJson != null)
         {
-            for (i in 0...difficulty.length)
-                json = cast Json.parse(rawJson);
+            json = cast Json.parse(rawJson);
             trace('loaded json');
             trace(folderShit);
             #if (HSCRIPT_ALLOWED && sys)
