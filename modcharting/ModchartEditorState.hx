@@ -970,15 +970,25 @@ class ModchartEditorState extends states.MusicBeatState
         opponentVocals = new FlxSound();
         try
         {
+            var endingPlayerSuffix:String = (boyfriendVocals == null || boyfriendVocals.length < 1) ? 'Player' : boyfriendVocals;
+            if (endingPlayerSuffix == null) endingPlayerSuffix = "";
+            var endingDiffSuffix:String = Difficulty.getString() + endingPlayerSuffix;
             var normalVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''));
-            var playerVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''), (boyfriendVocals == null || boyfriendVocals.length < 1) ? 'Player' : boyfriendVocals);
+            var playerVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''), endingPlayerSuffix);
+            var externalPlayerVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''), endingDiffSuffix);
+            if (playerVocals == null && externalPlayerVocals != null) playerVocals = externalPlayerVocals;
             vocals.loadEmbedded(playerVocals != null ? playerVocals : normalVocals);
         }
         catch(e){}
 
         try
         {
-            var oppVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''), (dadVocals == null || dadVocals.length < 1) ? 'Opponent' : dadVocals);
+            var endingOppSuffix:String = (dadVocals == null || dadVocals.length < 1) ? 'Player' : dadVocals;
+            if (endingOppSuffix == null) endingOppSuffix = "";
+            var endingDiffSuffix:String = Difficulty.getString() + endingOppSuffix;
+            var oppVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''), endingOppSuffix);
+            var externalOppVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''), endingDiffSuffix);
+            if (oppVocals == null && externalOppVocals != null) oppVocals = externalOppVocals;
             if(oppVocals != null) opponentVocals.loadEmbedded(oppVocals);
         }
         catch(e){}

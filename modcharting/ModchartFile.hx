@@ -259,7 +259,7 @@ class ModchartFile
 			            var justFilePlace = folderShit + '/advancedModScripts/' + file;
                         scriptInit = codenameengine.scripting.Script.create(justFilePlace);
                         if (PlayState.instance == flixel.FlxG.state)
-                            PlayState.instance.scripts.add(scriptInit);
+                            PlayState.instance.codeNameScripts.add(scriptInit);
                         scriptInit.load();
                         customModifiers.set(file.replace(".hx", "").replace(".hxs", "").replace(".hsc", "").replace(".hscript", ""), scriptInit);
                         backend.Debug.logInfo('loaded custom mod: ' + file);
