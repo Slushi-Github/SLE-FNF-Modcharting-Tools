@@ -44,6 +44,7 @@ import objects.Note;
 import objects.StrumArrow;
 import objects.Strumline;
 import substates.MusicBeatSubState;
+import utils.SoundUtil;
 
 using StringTools;
 
@@ -962,36 +963,30 @@ class ModchartEditorState extends states.MusicBeatState
 
     public function generateSong():Void
     {
-        var songData = PlayState.SONG;
-        var boyfriendVocals:String = getVocalFromCharacter(songData.characters.player);
-		var dadVocals:String = getVocalFromCharacter(songData.characters.opponent);
+        final songData = PlayState.SONG;
+        final boyfriendVocals:String = getVocalFromCharacter(songData.characters.player);
+		final dadVocals:String = getVocalFromCharacter(songData.characters.opponent);
+        final currentPrefix:String = (PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : '');
+        final currentSuffix:String = (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : '');
 
         vocals = new FlxSound();
         opponentVocals = new FlxSound();
         try
         {
-            var endingPlayerSuffix:String = (boyfriendVocals == null || boyfriendVocals.length < 1) ? 'Player' : boyfriendVocals;
-            if (endingPlayerSuffix == null) endingPlayerSuffix = "";
-            var endingDiffSuffix:String = Difficulty.getString() + endingPlayerSuffix;
-            var normalVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''));
-            var playerVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''), endingPlayerSuffix);
-            var externalPlayerVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''), endingDiffSuffix);
-            if (playerVocals == null && externalPlayerVocals != null) playerVocals = externalPlayerVocals;
+            final vocalPl:String = (boyfriendVocals == null || boyfriendVocals.length < 1) ? 'Player' : boyfriendVocals;
+            final normalVocals = Paths.voices(currentPrefix, songData.songId, currentSuffix);
+            var playerVocals = SoundUtil.findVocal({song: songData.songId, prefix: currentPrefix, suffix: currentSuffix, externVocal: vocalPl, character: songData.characters.player, difficulty: Difficulty.getString()});
             vocals.loadEmbedded(playerVocals != null ? playerVocals : normalVocals);
         }
-        catch(e){}
+        catch(e:Dynamic){}
 
         try
         {
-            var endingOppSuffix:String = (dadVocals == null || dadVocals.length < 1) ? 'Player' : dadVocals;
-            if (endingOppSuffix == null) endingOppSuffix = "";
-            var endingDiffSuffix:String = Difficulty.getString() + endingOppSuffix;
-            var oppVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''), endingOppSuffix);
-            var externalOppVocals = Paths.voices((PlayState.SONG.options.vocalsPrefix != null ? PlayState.SONG.options.vocalsPrefix : ''), songData.songId, (PlayState.SONG.options.vocalsSuffix != null ? PlayState.SONG.options.vocalsSuffix : ''), endingDiffSuffix);
-            if (oppVocals == null && externalOppVocals != null) oppVocals = externalOppVocals;
+            final vocalOp:String = (dadVocals == null || dadVocals.length < 1) ? 'Opponent' : dadVocals;
+            var oppVocals = SoundUtil.findVocal({song: songData.songId, prefix: currentPrefix, suffix: currentSuffix, externVocal: vocalOp, character: songData.characters.opponent, difficulty: Difficulty.getString()});
             if(oppVocals != null) opponentVocals.loadEmbedded(oppVocals);
         }
-        catch(e){}
+        catch(e:Dynamic){}
         FlxG.sound.list.add(vocals);
         FlxG.sound.list.add(opponentVocals);
 
