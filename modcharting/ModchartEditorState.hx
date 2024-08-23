@@ -348,7 +348,7 @@ class ModchartEditorState extends states.MusicBeatState
 		SLELogo.antialiasing = ClientPrefs.data.antialiasing;
 		add(SLELogo);
 
-        var overlay:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height);
+        var overlay:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
         overlay.setGraphicSize(Std.int(FlxG.width), Std.int(FlxG.height));
         add(overlay);
         overlay.alpha = 0.7;
