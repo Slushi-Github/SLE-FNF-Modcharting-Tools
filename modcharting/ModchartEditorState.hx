@@ -46,6 +46,7 @@ import objects.Strumline;
 import substates.MusicBeatSubState;
 
 import slushi.SlushiMain;
+import debug.FPSCounter;
 
 using StringTools;
 
@@ -279,8 +280,11 @@ class ModchartEditorState extends states.MusicBeatState
 
     public var camHUD:FlxCamera;
 	public var camGame:FlxCamera;
+    public var camOther:FlxCamera;
     public var notes:FlxTypedGroup<Note> = new FlxTypedGroup<Note>();
     public var arrowPaths:FlxTypedGroup<ArrowPathSegment> = new FlxTypedGroup<ArrowPathSegment>();
+
+    var highMemoryUseWarn:FlxText;
 
     private var strumLine:FlxSprite;
     public var strumLineNotes:Strumline = new Strumline(8);
@@ -332,6 +336,9 @@ class ModchartEditorState extends states.MusicBeatState
 		camHUD = new FlxCamera();
 		camHUD.bgColor.alpha = 0;
         FlxG.cameras.add(camHUD, false);
+        camOther = new FlxCamera();
+        camOther.bgColor.alpha = 0;
+        FlxG.cameras.add(camOther, false);
 
 		persistentUpdate = true;
 		persistentDraw = true;
@@ -352,6 +359,16 @@ class ModchartEditorState extends states.MusicBeatState
         overlay.setGraphicSize(Std.int(FlxG.width), Std.int(FlxG.height));
         add(overlay);
         overlay.alpha = 0.7;
+
+        highMemoryUseWarn = new FlxText(0, 0, 0, 'HIGH MEMORY USE. UNSAVED CHANGES DETECTED!', 32);
+        highMemoryUseWarn.scrollFactor.set();
+		highMemoryUseWarn.setFormat("VCR OSD Mono", 35, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+        highMemoryUseWarn.camera = camOther;
+        highMemoryUseWarn.color = FlxColor.RED;
+        highMemoryUseWarn.screenCenter();
+        highMemoryUseWarn.y += 320;
+        add(highMemoryUseWarn);
+        // highMemoryUseWarn.alpha = 0;
 
         if (PlayState.isPixelStage) //Skew Kills Pixel Notes (How are you going to stretch already pixelated bit by bit notes?)
         {
@@ -495,6 +512,19 @@ class ModchartEditorState extends states.MusicBeatState
 			inst.pause();
 			inst.time = 0;
 		}
+
+        if(hasUnsavedChanges) {
+            if (FPSCounter.currentTotalMemory >= 2048) {
+                highMemoryUseWarn.alpha = 0.1;
+            }
+            else if (FPSCounter.currentTotalMemory >= 3072) {
+                highMemoryUseWarn.alpha = 0.6; 
+                camOther.shake(0.025, elapsed, null, false, null);
+            }
+        }
+        else {
+            highMemoryUseWarn.alpha = 0;
+        }
 
         playfieldRenderer.updateToCurrentElapsed(totalElapsed);
 
