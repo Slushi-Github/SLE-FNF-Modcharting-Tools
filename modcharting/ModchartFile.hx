@@ -438,7 +438,7 @@ class CustomModifierScript
 		interp.variables.set('Paths', backend.Paths);
 		interp.variables.set('Conductor', backend.Conductor);
         interp.variables.set('StringTools', StringTools);
-        interp.variables.set('Note', objects.Note);
+        interp.variables.set('Note', objects.note.Note);
 
         interp.variables.set('ClientPrefs', backend.ClientPrefs);
         interp.variables.set('ColorSwap', shaders.ColorSwap);

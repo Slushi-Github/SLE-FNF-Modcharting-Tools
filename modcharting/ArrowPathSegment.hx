@@ -25,7 +25,7 @@ import openfl.geom.Matrix;
 import openfl.geom.Rectangle;
 import openfl.geom.ColorTransform;
 import openfl.geom.Point;
-import objects.Strumline;
+import objects.note.Strumline;
 
 // SCRAPED BECAUSE IT JUST CAUSED MAJOR LAG PROBLEMS LOL
 // ALSO BECAUSE IM NOT SMART ENOUGH TO FIGURE IT OUT

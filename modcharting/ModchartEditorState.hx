@@ -40,9 +40,9 @@ import modcharting.ModchartFile;
 
 import backend.Debug;
 import backend.ui.*;
-import objects.Note;
-import objects.StrumArrow;
-import objects.Strumline;
+import objects.note.Note;
+import objects.note.StrumArrow;
+import objects.note.Strumline;
 import substates.MusicBeatSubState;
 import utils.SoundUtil;
 

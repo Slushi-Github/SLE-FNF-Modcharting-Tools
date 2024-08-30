@@ -8,7 +8,7 @@ import lime.math.Vector4;
 import haxe.ds.List;
 
 import states.PlayState;
-import objects.Note;
+import objects.note.Note;
 
 enum ModifierType
 {

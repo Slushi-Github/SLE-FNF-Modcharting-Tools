@@ -4,7 +4,7 @@ import flixel.FlxStrip;
 import flixel.graphics.tile.FlxDrawTrianglesItem.DrawData;
 import openfl.geom.Vector3D;
 import lime.math.Vector2;
-import objects.Note;
+import objects.note.Note;
 
 class SustainStrip extends FlxStrip
 {
