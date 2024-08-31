@@ -268,7 +268,24 @@ class ModchartFile
             }
             #end
 
-	        if (FileSystem.isDirectory(folderShit))
+	        if (FileSystem.isDirectory(folderShit + '/Iris/'))
+            {
+                backend.Debug.logInfo("folder le exists");
+                for (file in FileSystem.readDirectory(folderShit + '/Iris/'))
+                {
+                    backend.Debug.logInfo(file);
+                    if(file.endsWith('.hx') || file.endsWith('.hxs') || file.endsWith('.hsc') || file.endsWith('.hscript')) //custom mods!!!!
+                    {
+                        var scriptStr = File.getContent(folderShit + '/Iris/' + file);
+                        var scriptInit:Dynamic = null;
+                       	scriptInit = new FunkinHScript(null, scriptStr);
+                        customModifiers.set(file.replace(".hx", "").replace(".hxs", "").replace(".hsc", "").replace(".hscript", ""), scriptInit);
+                        backend.Debug.logInfo('loaded custom mod: ' + file);
+                    }
+                }
+            }
+
+	    if (FileSystem.isDirectory(folderShit))
             {
                 backend.Debug.logInfo("folder le exists");
                 for (file in FileSystem.readDirectory(folderShit))
@@ -278,7 +295,7 @@ class ModchartFile
                     {
                         var scriptStr = File.getContent(folderShit + file);
                         var scriptInit:Dynamic = null;
-                       	scriptInit = new FunkinHScript(null, scriptStr);
+                       	scriptInit = new CustomModifierScript(scriptStr);
                         customModifiers.set(file.replace(".hx", "").replace(".hxs", "").replace(".hsc", "").replace(".hscript", ""), scriptInit);
                         backend.Debug.logInfo('loaded custom mod: ' + file);
                     }
@@ -421,7 +438,7 @@ class CustomModifierScript
 		interp.variables.set('Paths', backend.Paths);
 		interp.variables.set('Conductor', backend.Conductor);
         interp.variables.set('StringTools', StringTools);
-        interp.variables.set('Note', objects.Note);
+        interp.variables.set('Note', objects.note.Note);
 
         interp.variables.set('ClientPrefs', backend.ClientPrefs);
         interp.variables.set('ColorSwap', shaders.ColorSwap);

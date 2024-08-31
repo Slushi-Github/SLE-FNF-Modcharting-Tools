@@ -1,6 +1,5 @@
 package modcharting;
 
-
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -26,12 +25,17 @@ import openfl.geom.Rectangle;
 import openfl.geom.ColorTransform;
 import openfl.geom.Point;
 import objects.note.Strumline;
+import objects.note.constant.Constant3DStrumArrow;
 
 // SCRAPED BECAUSE IT JUST CAUSED MAJOR LAG PROBLEMS LOL
 // ALSO BECAUSE IM NOT SMART ENOUGH TO FIGURE IT OUT
 
 // GOOD LUCK FIGURING THIS OUT! if you get it, make sure to make a pull request into MT, so i can add it!!!!, thanks! -Edwhak
-class ArrowPathSegment extends flixel.FlxBasic
+
+/**
+ * Copy of ArrowPathSegment but constantly attached to Constant3DStrumArrow.
+ */
+class ArrowPathSegmentConstant3D extends flixel.FlxBasic
 {
   // The actual bitmap data
   public var bitmap:BitmapData;
@@ -50,14 +54,14 @@ class ArrowPathSegment extends flixel.FlxBasic
   public var blendMode:String = "normal";
   public var colTransf:ColorTransform;
 
-  public var strum:StrumArrow;
+  public var strum:Constant3DStrumArrow;
 
   public var defaultLineSize:Float = 2;
 
   public var width:Int = 0;
   public var height:Int = 0;
 
-  public function new(s:StrumArrow, w:Int = -1, h:Int = -1)
+  public function new(s:Constant3DStrumArrow, w:Int = -1, h:Int = -1)
   {
     super();
     this.strum = s;

@@ -7,7 +7,7 @@ import openfl.geom.Vector3D;
 import flixel.FlxG;
 
 import states.PlayState;
-import objects.Note;
+import objects.note.Note;
 
 using StringTools;
 

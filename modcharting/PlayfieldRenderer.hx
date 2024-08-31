@@ -11,9 +11,9 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import openfl.geom.Vector3D;
 
 import states.PlayState;
-import objects.Note;
-import objects.StrumArrow;
-import objects.Strumline;
+import objects.note.Note;
+import objects.note.StrumArrow;
+import objects.note.Strumline;
 import modcharting.Modifier;
 
 using StringTools;

@@ -1,7 +1,7 @@
 package modcharting;
 
 import states.PlayState;
-import objects.Note;
+import objects.note.Note;
 
 using StringTools;
 

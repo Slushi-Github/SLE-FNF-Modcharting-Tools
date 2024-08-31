@@ -14,8 +14,8 @@ import states.LoadingState;
 import substates.MusicBeatSubState;
 
 // Objects
-import objects.Note;
-import objects.StrumArrow;
+import objects.note.Note;
+import objects.note.StrumArrow;
 
 // Backend
 import backend.song.Song;
