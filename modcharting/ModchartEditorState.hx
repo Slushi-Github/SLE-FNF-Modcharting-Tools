@@ -975,7 +975,8 @@ class ModchartEditorState extends states.MusicBeatState
         {
             final vocalPl:String = (boyfriendVocals == null || boyfriendVocals.length < 1) ? 'Player' : boyfriendVocals;
             final normalVocals = Paths.voices(currentPrefix, songData.songId, currentSuffix);
-            var playerVocals = SoundUtil.findVocal({song: songData.songId, prefix: currentPrefix, suffix: currentSuffix, externVocal: vocalPl, character: songData.characters.player, difficulty: Difficulty.getString()});
+            var playerVocals = SoundUtil.findVocalOrInst((PlayState.SONG._extraData != null
+                && PlayState.SONG._extraData._vocalSettings != null) ? PlayState.SONG._extraData._vocalSettings : {song: songData.songId, prefix: currentPrefix, suffix: currentSuffix, externVocal: vocalPl, character: songData.characters.player, difficulty: Difficulty.getString()});
             vocals.loadEmbedded(playerVocals != null ? playerVocals : normalVocals);
         }
         catch(e:Dynamic){}
@@ -983,7 +984,8 @@ class ModchartEditorState extends states.MusicBeatState
         try
         {
             final vocalOp:String = (dadVocals == null || dadVocals.length < 1) ? 'Opponent' : dadVocals;
-            var oppVocals = SoundUtil.findVocal({song: songData.songId, prefix: currentPrefix, suffix: currentSuffix, externVocal: vocalOp, character: songData.characters.opponent, difficulty: Difficulty.getString()});
+            var oppVocals = SoundUtil.findVocalOrInst((PlayState.SONG._extraData != null
+                && PlayState.SONG._extraData._vocalOppSettings != null) ? PlayState.SONG._extraData._vocalOppSettings : {song: songData.songId, prefix: currentPrefix, suffix: currentSuffix, externVocal: vocalOp, character: songData.characters.opponent, difficulty: Difficulty.getString()});
             if(oppVocals != null) opponentVocals.loadEmbedded(oppVocals);
         }
         catch(e:Dynamic){}
@@ -993,7 +995,19 @@ class ModchartEditorState extends states.MusicBeatState
         inst = new FlxSound();
         try
         {
-            inst.loadEmbedded(Paths.inst((PlayState.SONG.options.instrumentalPrefix != null ? PlayState.SONG.options.instrumentalPrefix : ''), PlayState.SONG.songId, (PlayState.SONG.options.instrumentalSuffix != null ? PlayState.SONG.options.instrumentalSuffix : '')));
+            final currentPrefix:String = (PlayState.SONG.options.instrumentalPrefix != null ? PlayState.SONG.options.instrumentalPrefix : '');
+            final currentSuffix:String = (PlayState.SONG.options.instrumentalSuffix != null ? PlayState.SONG.options.instrumentalSuffix : '');
+            final instSound = SoundUtil.findVocalOrInst((PlayState.SONG._extraData != null
+        && PlayState.SONG._extraData._instSettings != null) ? PlayState.SONG._extraData._instSettings :
+            {
+                song: PlayState.SONG.songId,
+                prefix: currentPrefix,
+                suffix: currentSuffix,
+                externVocal: "",
+                character: "",
+                difficulty: Difficulty.getString()
+            }, 'INST');
+            inst.loadEmbedded(instSound);
         }
         catch(e){}
         FlxG.sound.list.add(inst);
