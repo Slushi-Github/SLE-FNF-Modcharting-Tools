@@ -39,6 +39,7 @@ import modcharting.Modifier;
 import modcharting.ModchartFile;
 
 import backend.Debug;
+import backend.CustomArrayGroup;
 import backend.ui.*;
 import objects.note.Note;
 import objects.note.StrumArrow;
@@ -286,8 +287,8 @@ class ModchartEditorState extends states.MusicBeatState
 	public var opponentStrums:Strumline = new Strumline(4);
 	public var playerStrums:Strumline = new Strumline(4);
 
-	public var unspawnNotes:Array<Note> = [];
-    public var loadedNotes:Array<Note> = []; //stored notes from the chart that unspawnNotes can copy from
+	public var unspawnNotes:CustomArrayGroup<Note> = new CustomArrayGroup<Note>();
+    public var loadedNotes:CustomArrayGroup<Note> = new CustomArrayGroup<Note>(); //stored notes from the chart that unspawnNotes can copy from
     public var vocals:FlxSound;
     public var opponentVocals:FlxSound;
 
@@ -324,6 +325,16 @@ class ModchartEditorState extends states.MusicBeatState
 
     override public function create()
     {
+        unspawnNotes.validTime = function(rate:Float = 1, ?ignoreMultSpeed:Bool = false):Bool {
+            final firstMember:Note = unspawnNotes.members[0];
+            if (firstMember != null) return (unspawnNotes.length > 0 && firstMember.validTime(rate, ignoreMultSpeed));
+            return false;
+        }
+        loadedNotes.validTime = function(rate:Float = 1, ?ignoreMultSpeed:Bool = false):Bool {
+            final firstMember:Note = unspawnNotes.members[0];
+            if (firstMember != null) return (unspawnNotes.length > 0 && firstMember.validTime(rate, ignoreMultSpeed));
+            return false;
+        }
         Paths.clearStoredMemory();
         Paths.clearUnusedMemory();
 
@@ -427,7 +438,7 @@ class ModchartEditorState extends states.MusicBeatState
 
         add(debugText);
 
-        if (ClientPrefs.data.quantNotes && !PlayState.SONG.options.disableNoteRGB && !PlayState.SONG.options.disableStrumRGB && !PlayState.SONG.options.disableNoteQuantRGB) setUpNoteQuant();
+        if (!PlayState.SONG.options.disableNoteRGB && !PlayState.SONG.options.disableStrumRGB && !PlayState.SONG.options.disableNoteCustomRGB) setUpColorNotes();
 
         super.create(); //do here because tooltips be dumb
         setupModifierUI();
@@ -458,18 +469,16 @@ class ModchartEditorState extends states.MusicBeatState
     var dirtyUpdateEvents:Bool = false;
     var dirtyUpdateModifiers:Bool = false;
     var totalElapsed:Float = 0;
+    var staticColorStrums:Bool = false;
     override public function update(elapsed:Float)
     {
-        if (finishedSetUpQuantStuff)
+        if (staticColorStrums && !PlayState.SONG.options.disableStrumRGB)
         {
-            if (ClientPrefs.data.quantNotes && !PlayState.SONG.options.disableStrumRGB)
-            {
-                var group:FlxTypedGroup<StrumArrow> = playerStrums;
-                for (this2 in group){
-                    if (this2.animation.curAnim.name == 'static'){
-                        this2.rgbShader.r = 0xFFFFFFFF;
-                        this2.rgbShader.b = 0xFF808080;
-                    }
+            var group:FlxTypedGroup<StrumArrow> = playerStrums;
+            for (this2 in group){
+                if (this2.animation.curAnim.name == 'static'){
+                    this2.rgbShader.r = 0xFFFFFFFF;
+                    this2.rgbShader.b = 0xFF808080;
                 }
             }
         }
@@ -605,6 +614,8 @@ class ModchartEditorState extends states.MusicBeatState
             if (curSpeed != playbackSpeed)
                 dirtyUpdateEvents = true;
         }
+        else
+            ClientPrefs.toggleVolumeKeys(false);
 
         if (playbackSpeed <= 0.5)
             playbackSpeed = 0.5;
@@ -618,18 +629,14 @@ class ModchartEditorState extends states.MusicBeatState
         if (opponentVocals != null) opponentVocals.pitch = playbackSpeed;
         #end
 
-        if (unspawnNotes[0] != null)
+        if (unspawnNotes.isFirstValid())
         {
-            var time:Float = unspawnNotes[0].spawnTime;
-            if(PlayState.SONG.speed < 1) time /= PlayState.SONG.speed;
-
-            while (unspawnNotes.length > 0 && unspawnNotes[0].strumTime - Conductor.songPosition < time)
+            while (unspawnNotes.validTime(playbackSpeed, true))
             {
-                var dunceNote:Note = unspawnNotes[0];
+                var dunceNote:Note = unspawnNotes.byIndex(0);
                 notes.insert(0, dunceNote);
                 dunceNote.spawned=true;
-                var index:Int = unspawnNotes.indexOf(dunceNote);
-                unspawnNotes.splice(index, 1);
+                unspawnNotes.spliceIndexOf(dunceNote, 1);
             }
         }
 
@@ -653,7 +660,7 @@ class ModchartEditorState extends states.MusicBeatState
                     spr.playAnim("confirm", true);
                 }
                 spr.resetAnim = Conductor.stepCrochet * 1.25 / 1000 / playbackSpeed;
-                if (PlayState.SONG != null && !PlayState.SONG.options.disableStrumRGB)
+                if (PlayState.SONG != null && !PlayState.SONG.options.disableStrumRGB && staticColorStrums)
                 {
                     spr.rgbShader.r = daNote.rgbShader.r;
                     spr.rgbShader.g = daNote.rgbShader.g;
@@ -737,12 +744,11 @@ class ModchartEditorState extends states.MusicBeatState
                 }
             }
         }
-        else ClientPrefs.toggleVolumeKeys(false);
 
         if (dirtyUpdateNotes)
         {
             clearNotesAfter(Conductor.songPosition+2000); //so scrolling back doesnt lag shit
-            unspawnNotes = loadedNotes.copy();
+            unspawnNotes.members = loadedNotes.members.copy();
             clearNotesBefore(Conductor.songPosition);
             dirtyUpdateNotes = false;
         }
@@ -911,7 +917,7 @@ class ModchartEditorState extends states.MusicBeatState
     {
         var i:Int = unspawnNotes.length - 1;
         while (i >= 0) {
-            var daNote:Note = unspawnNotes[i];
+            var daNote:Note = unspawnNotes.members[i];
             if(daNote.strumTime+350 < time)
             {
                 daNote.active = false;
@@ -1029,108 +1035,133 @@ class ModchartEditorState extends states.MusicBeatState
         notes = new FlxTypedGroup<Note>();
         add(notes);
 
-
-        var playerCounter:Int = 0;
-
-        var daBeats:Int = 0; // Not exactly representative of 'daBeats' lol, just how much it has looped
-
         //var songName:String = Paths.formatToSongPath(PlayState.SONG.song);
 
+        unspawnNotes.setMembers(createNotes(PlayState.SONG.notes));
+        unspawnNotes.resort('strumTime');
+        loadedNotes.setMembers(unspawnNotes.members.copy());
+        generatedMusic = true;
+    }
+
+    var totalColumns:Int = 4;
+    function createNotes(sectionsData:Array<backend.song.SongData.SwagSection>):Array<Note>
+    {
+        var unspawnNotes:Array<Note> = [];
+        var daSection:Int = 0;
+        var ghostNotesCaught:Int = 0;
+        var daBpm:Float = Conductor.bpm;
         var oldNote:Note = null;
-        var sectionsData:Array<backend.song.SongData.SwagSection> = PlayState.SONG.notes;
         for (section in sectionsData)
         {
-            for (songNotes in section.sectionNotes)
+            for (i in 0...section.sectionNotes.length)
             {
-                var strumTime:Float = songNotes[0];
-                var noteData:Int = Std.int(songNotes[1] % 4);
+                final songNotes:Array<Dynamic> = section.sectionNotes[i];
+                final spawnTime:Float = songNotes[0];
+                final noteColumn:Int = Std.int(songNotes[1] % totalColumns);
+                final holdLength:Float = ClientPrefs.getGameplaySetting('sustainnotesactive') && !Math.isNaN(songNotes[2]) ? songNotes[2] : 0.0;
+                final noteType:String = songNotes[3];
+
                 var gottaHitNote:Bool = true;
+
                 if (songNotes[1] > 3 && !opponentMode) gottaHitNote = false;
                 else if (songNotes[1] <= 3 && opponentMode) gottaHitNote = false;
 
-                var swagNote:Note = new Note(strumTime, noteData, false, PlayState.SONG?.options?.arrowSkin, oldNote, this, PlayState.SONG?.speed, gottaHitNote ? playerStrums : opponentStrums, false);
-                swagNote.setupNote(gottaHitNote, gottaHitNote ? 1 : 0, daBeats, songNotes[3]);
-                swagNote.sustainLength = songNotes[2];
-                swagNote.scrollFactor.set();
-
-                #if SCEFEATURES_ALLOWED
-                if (swagNote.texture.contains('pixel') || swagNote.noteSkin.contains('pixel')){
-                    swagNote.containsPixelTexture = true;
+                if (i != 0)
+                {
+                    // CLEAR ANY POSSIBLE GHOST NOTES
+                    for (evilNote in unspawnNotes)
+                    {
+                        var matches:Bool = (noteColumn == evilNote.noteData && gottaHitNote == evilNote.mustPress && evilNote.noteType == noteType);
+                        if (matches && Math.abs(spawnTime - evilNote.strumTime) == 0.0)
+                        {
+                            evilNote.destroy();
+                            unspawnNotes.remove(evilNote);
+                            ghostNotesCaught++;
+                            // continue;
+                        }
+                    }
                 }
 
-                if (ClientPrefs.getGameplaySetting('sustainnotesactive')) swagNote.sustainLength = songNotes[2] / playbackSpeed;
-                else swagNote.sustainLength = 0;
-                #end
-
+                var swagNote:Note = new Note(spawnTime, noteColumn, false, PlayState.SONG?.options?.arrowSkin, oldNote, this, PlayState.SONG?.speed, gottaHitNote ? playerStrums : opponentStrums,
+                    false);
+                var isPixelNote:Bool = (swagNote.texture.contains('pixel') || swagNote.noteSkin.contains('pixel'));
+                swagNote.setupNote(gottaHitNote, gottaHitNote ? 1 : 0, daSection, noteType);
+                swagNote.containsPixelTexture = isPixelNote;
+                swagNote.sustainLength = holdLength;
+                swagNote.scrollFactor.set();
                 unspawnNotes.push(swagNote);
 
-                final susLength:Float = swagNote.sustainLength / Conductor.stepCrochet;
-                final floorSus:Int = Math.floor(susLength);
-
-                if(floorSus > 0) {
-                    for (susNote in 0...floorSus + 1)
+                final curStepCrochet:Float = 60 / daBpm * 1000 * .25;
+                final roundSus:Int = Math.round((swagNote.sustainLength - curStepCrochet * .25) / curStepCrochet);
+                if (roundSus != 0)
+                {
+                    for (susNote in 0...roundSus + 1)
                     {
                         oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
 
-                        var sustainNote:Note = new Note(strumTime + (Conductor.stepCrochet * susNote), noteData, true, PlayState.SONG?.options?.arrowSkin, oldNote, this, PlayState.SONG?.speed, gottaHitNote ? playerStrums : opponentStrums, false);
-                        sustainNote.setupNote(gottaHitNote, gottaHitNote ? 1 : 0, daBeats, swagNote.noteType);
-                        swagNote.tail.push(sustainNote);
+                        var sustainNote:Note = new Note(spawnTime + (curStepCrochet * susNote), noteColumn, true, PlayState.SONG?.options?.arrowSkin, oldNote, this, PlayState.SONG?.speed,
+                            gottaHitNote ? playerStrums : opponentStrums, false);
+                        var isPixelNoteSus:Bool = (sustainNote.texture.contains('pixel')
+                            || sustainNote.noteSkin.contains('pixel')
+                            || oldNote.texture.contains('pixel')
+                            || oldNote.noteSkin.contains('pixel'));
+                        sustainNote.setupNote(swagNote.mustPress, swagNote.strumLine, swagNote.noteSection, swagNote.noteType);
+                        sustainNote.containsPixelTexture = isPixelNoteSus;
                         sustainNote.parent = swagNote;
                         sustainNote.scrollFactor.set();
                         unspawnNotes.push(sustainNote);
+                        swagNote.tail.push(sustainNote);
 
-                        var isNotePixel:Bool = (sustainNote.texture.contains('pixel') || sustainNote.noteSkin.contains('pixel') || oldNote.texture.contains('pixel') || oldNote.noteSkin.contains('pixel'));
-                        if (isNotePixel) {
-                            oldNote.containsPixelTexture = true;
-                            sustainNote.containsPixelTexture = true;
-                        }
+                        // After everything loads
+                        var isNotePixel:Bool = isPixelNoteSus;
+                        oldNote.containsPixelTexture = isNotePixel;
                         sustainNote.correctionOffset = swagNote.height / 2;
-                        if(!isNotePixel)
+                        if (!isNotePixel)
                         {
-                            if(oldNote.isSustainNote)
+                            if (oldNote.isSustainNote)
                             {
                                 oldNote.scale.y *= Note.SUSTAIN_SIZE / oldNote.frameHeight;
                                 oldNote.scale.y /= playbackSpeed;
-                                oldNote.updateHitbox();
+                                oldNote.resizeByRatio(curStepCrochet / Conductor.stepCrochet);
                             }
 
-                            if(ClientPrefs.data.downScroll) sustainNote.correctionOffset = 0;
+                            if (ClientPrefs.data.downScroll) sustainNote.correctionOffset = 0;
                         }
                         else if (oldNote.isSustainNote)
                         {
                             oldNote.scale.y /= playbackSpeed;
-                            oldNote.updateHitbox();
+                            oldNote.resizeByRatio(curStepCrochet / Conductor.stepCrochet);
                         }
 
                         if (sustainNote.mustPress) sustainNote.x += FlxG.width / 2; // general offset
-                        else if(ClientPrefs.data.middleScroll)
+                        else if (ClientPrefs.data.middleScroll)
                         {
                             sustainNote.x += 310;
-                            if(noteData > 1) //Up and Right
+                            if (noteColumn > 1) // Up and Right
                                 sustainNote.x += FlxG.width / 2 + 25;
                         }
                     }
                 }
+
                 if (swagNote.mustPress)
                 {
                     swagNote.x += FlxG.width / 2; // general offset
                 }
-                else if(ClientPrefs.data.middleScroll)
+                else if (ClientPrefs.data.middleScroll)
                 {
                     swagNote.x += 310;
-                    if(noteData > 1) //Up and Right
-                        swagNote.x += FlxG.width / 2 + 25;
+                    if (noteColumn > 1) // Up and Right
+                    swagNote.x += FlxG.width / 2 + 25;
                 }
 
                 oldNote = swagNote;
             }
-            daBeats += 1;
-        }
 
-        unspawnNotes.sort(sortByTime);
-        loadedNotes = unspawnNotes.copy();
-        generatedMusic = true;
+            daSection += 1;
+        }
+        return unspawnNotes;
     }
+
     function sortByTime(Obj1:Dynamic, Obj2:Dynamic):Int
     {
         return FlxSort.byValues(FlxSort.ASCENDING, Obj1.strumTime, Obj2.strumTime);
@@ -1187,7 +1218,7 @@ class ModchartEditorState extends states.MusicBeatState
 
             strumLineNotes.add(babyArrow);
             if (babyArrow.lineSegment != null) arrowPaths.add(babyArrow.lineSegment);
-            babyArrow.postAddedToGroup();
+            babyArrow.playerPosition();
         }
     }
 
@@ -1196,91 +1227,122 @@ class ModchartEditorState extends states.MusicBeatState
 		return Math.floor(num * mult + 0.5) / mult;
 	}
 
- 	public function setUpNoteQuant()
+ 	public function setUpColorNotes()
 	{
-		var bpmChanges = Conductor.bpmChangeMap;
-		var strumTime:Float = 0;
-		var currentBPM:Float = PlayState.SONG.bpm;
-		var newTime:Float = 0;
-		for (note in unspawnNotes)
-		{
-			strumTime = note.strumTime;
-			newTime = strumTime;
-			for (i in 0...bpmChanges.length)
-				if (strumTime > bpmChanges[i].songTime){
-					currentBPM = bpmChanges[i].bpm;
-					newTime = strumTime - bpmChanges[i].songTime;
-				}
-			if (note.quantColorsOnNotes && note.rgbShader.enabled){
-				dataStuff = ((currentBPM * (newTime - ClientPrefs.data.noteOffset)) / 1000 / 60);
-				beat = round(dataStuff * 48, 0);
+        switch (ClientPrefs.data.colorNoteType)
+        {
+            case 'Quant':
+            var bpmChanges = Conductor.bpmChangeMap;
+            var strumTime:Float = 0;
+            var currentBPM:Float = PlayState.SONG.bpm;
+            var newTime:Float = 0;
+            for (note in unspawnNotes.members)
+            {
+                strumTime = note.strumTime;
+                newTime = strumTime;
+                for (i in 0...bpmChanges.length)
+                if (strumTime > bpmChanges[i].songTime)
+                {
+                    currentBPM = bpmChanges[i].bpm;
+                    newTime = strumTime - bpmChanges[i].songTime;
+                }
+                if (note.customColorsOnNotes && note.rgbShader.enabled)
+                {
+                    dataStuff = ((currentBPM * (newTime - ClientPrefs.data.noteOffset)) / 1000 / 60);
+                    beat = round(dataStuff * 48, 0);
 
-				if (!note.isSustainNote)
-				{
-					if(beat%(192/4)==0){
-						col = ClientPrefs.data.arrowRGBQuantize[0][0];
-						col2 = ClientPrefs.data.arrowRGBQuantize[0][2];
-					}
-					else if(beat%(192/8)==0){
-						col = ClientPrefs.data.arrowRGBQuantize[1][0];
-						col2 = ClientPrefs.data.arrowRGBQuantize[1][2];
-					}
-					else if(beat%(192/12)==0){
-						col = ClientPrefs.data.arrowRGBQuantize[2][0];
-						col2 = ClientPrefs.data.arrowRGBQuantize[2][2];
-					}
-					else if(beat%(192/16)==0){
-						col = ClientPrefs.data.arrowRGBQuantize[3][0];
-						col2 = ClientPrefs.data.arrowRGBQuantize[3][2];
-					}
-					else if(beat%(192/20)==0){
-						col = ClientPrefs.data.arrowRGBQuantize[4][0];
-						col2 = ClientPrefs.data.arrowRGBQuantize[4][2];
-					}
-					else if(beat%(192/24)==0){
-						col = ClientPrefs.data.arrowRGBQuantize[5][0];
-						col2 = ClientPrefs.data.arrowRGBQuantize[5][2];
-					}
-					else if(beat%(192/28)==0){
-						col = ClientPrefs.data.arrowRGBQuantize[6][0];
-						col2 = ClientPrefs.data.arrowRGBQuantize[6][2];
-					}
-					else if(beat%(192/32)==0){
-						col = ClientPrefs.data.arrowRGBQuantize[7][0];
-						col2 = ClientPrefs.data.arrowRGBQuantize[7][2];
-					}else{
-						col = 0xFF7C7C7C;
-						col2 = 0xFF3A3A3A;
-					}
-					note.rgbShader.r = col;
-					note.rgbShader.g = ClientPrefs.data.arrowRGBQuantize[0][1];
-					note.rgbShader.b = col2;
+                    if (!note.isSustainNote)
+                    {
+                        if (beat % (192 / 4) == 0)
+                        {
+                            col = ClientPrefs.data.arrowRGBQuantize[0][0];
+                            col2 = ClientPrefs.data.arrowRGBQuantize[0][2];
+                        }
+                        else if (beat % (192 / 8) == 0)
+                        {
+                            col = ClientPrefs.data.arrowRGBQuantize[1][0];
+                            col2 = ClientPrefs.data.arrowRGBQuantize[1][2];
+                        }
+                        else if (beat % (192 / 12) == 0)
+                        {
+                            col = ClientPrefs.data.arrowRGBQuantize[2][0];
+                            col2 = ClientPrefs.data.arrowRGBQuantize[2][2];
+                        }
+                        else if (beat % (192 / 16) == 0)
+                        {
+                            col = ClientPrefs.data.arrowRGBQuantize[3][0];
+                            col2 = ClientPrefs.data.arrowRGBQuantize[3][2];
+                        }
+                        else if (beat % (192 / 20) == 0)
+                        {
+                            col = ClientPrefs.data.arrowRGBQuantize[4][0];
+                            col2 = ClientPrefs.data.arrowRGBQuantize[4][2];
+                        }
+                        else if (beat % (192 / 24) == 0)
+                        {
+                            col = ClientPrefs.data.arrowRGBQuantize[5][0];
+                            col2 = ClientPrefs.data.arrowRGBQuantize[5][2];
+                        }
+                        else if (beat % (192 / 28) == 0)
+                        {
+                            col = ClientPrefs.data.arrowRGBQuantize[6][0];
+                            col2 = ClientPrefs.data.arrowRGBQuantize[6][2];
+                        }
+                        else if (beat % (192 / 32) == 0)
+                        {
+                            col = ClientPrefs.data.arrowRGBQuantize[7][0];
+                            col2 = ClientPrefs.data.arrowRGBQuantize[7][2];
+                        }
+                        else
+                        {
+                            col = 0xFF7C7C7C;
+                            col2 = 0xFF3A3A3A;
+                        }
+                        note.rgbShader.r = col;
+                        note.rgbShader.g = ClientPrefs.data.arrowRGBQuantize[0][1];
+                        note.rgbShader.b = col2;
+                    }
+                    else
+                    {
+                        note.rgbShader.r = note.prevNote.rgbShader.r;
+                        note.rgbShader.g = note.prevNote.rgbShader.g;
+                        note.rgbShader.b = note.prevNote.rgbShader.b;
+                    }
+                }
+            }
+            case 'Rainbow':
+                for (note in unspawnNotes.members)
+                {
+                    var superCoolColor = new FlxColor(0xFFFF0000);
+                    superCoolColor.hue = (note.strumTime / 5000 * 360) % 360;
+                    var coolDarkColor = superCoolColor;
+                    note.rgbShader.r = superCoolColor;
+                    note.rgbShader.g = FlxColor.WHITE;
+                    note.rgbShader.b = superCoolColor.getDarkened(0.7);
+                }
+        }
 
-				}else{
-					note.rgbShader.r = note.prevNote.rgbShader.r;
-					note.rgbShader.g = note.prevNote.rgbShader.g;
-					note.rgbShader.b = note.prevNote.rgbShader.b;
-				}
-			}
+        switch (ClientPrefs.data.colorNoteType)
+        {
+            case 'Rainbow', 'Quant':
+                staticColorStrums = true;
 
-
-			for (this2 in opponentStrums)
-			{
-				this2.rgbShader.r = 0xFFFFFFFF;
-				this2.rgbShader.b = 0xFF000000;
-				this2.rgbShader.enabled = false;
-			}
-			for (this2 in playerStrums)
-			{
-				this2.rgbShader.r = 0xFFFFFFFF;
-				this2.rgbShader.b = 0xFF000000;
-				this2.rgbShader.enabled = false;
-			}
-		}
-		finishedSetUpQuantStuff = true;
+                for (this1 in opponentStrums)
+                {
+                    this1.rgbShader.r = 0xFF808080;
+                    this1.rgbShader.b = 0xFF474747;
+                    this1.rgbShader.g = 0xFFFFFFFF;
+                    this1.rgbShader.enabled = false;
+                }
+                for (this2 in playerStrums)
+                {
+                    this2.rgbShader.r = 0xFF808080;
+                    this2.rgbShader.b = 0xFF474747;
+                    this2.rgbShader.g = 0xFFFFFFFF;
+                    this2.rgbShader.enabled = false;
+                }
+        }
 	}
-
-	var finishedSetUpQuantStuff = false;
 
 	function getVocalFromCharacter(char:String)
 	{

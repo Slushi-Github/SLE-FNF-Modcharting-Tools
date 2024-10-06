@@ -164,7 +164,6 @@ class Modifier
         return false;
 }
 
-
 class DrunkXModifier extends Modifier
 {
     override function setupInformation()
