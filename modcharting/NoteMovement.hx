@@ -22,9 +22,9 @@ class NoteMovement
     public static function getDefaultStrumPos(game:PlayState)
     {
         defaultStrumX = []; //reset
-        defaultStrumY = []; 
+        defaultStrumY = [];
         defaultSkewX = [];
-        defaultSkewY = []; 
+        defaultSkewY = [];
         defaultScale = [];
         arrowSizes = [];
         keyCount = game.strumLineNotes.length-game.playerStrums.length; //base game doesnt have opponent strums as group
@@ -44,12 +44,12 @@ class NoteMovement
         }
         totalKeyCount = keyCount + playerKeyCount;
     }
-    
+
     public static function getDefaultStrumPosEditor(game:modcharting.ModchartEditorState)
     {
         #if (!DISABLE_MODCHART_EDITOR)
         defaultStrumX = []; //reset
-        defaultStrumY = []; 
+        defaultStrumY = [];
         defaultSkewX = [];
         defaultSkewY = [];
         defaultScale = [];
@@ -94,7 +94,7 @@ class NoteMovement
         {
             col -= (keyCount*0.5)+1;
         }
-        else 
+        else
         {
             col -= (keyCount*0.5);
         }

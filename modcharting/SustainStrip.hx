@@ -1,8 +1,11 @@
 package modcharting;
 
 import flixel.FlxStrip;
+import flixel.graphics.FlxGraphic;
 import flixel.graphics.tile.FlxDrawTrianglesItem.DrawData;
+import flixel.system.FlxAssets.FlxShader;
 import openfl.geom.Vector3D;
+import openfl.geom.ColorTransform;
 import lime.math.Vector2;
 import objects.note.Note;
 
@@ -28,8 +31,8 @@ class SustainStrip extends FlxStrip
         this.daNote = daNote;
         daNote.alpha = 1;
         super(0,0);
-        this.daNote.reloadNote();
-        loadGraphic(this.daNote.updateFramePixels());
+        daNote.reloadNote();
+        loadGraphic(daNote.updateFramePixels());
         this.shader = daNote.rgbShader.parent.shader;
         for (uv in noteUV)
         {
@@ -39,14 +42,6 @@ class SustainStrip extends FlxStrip
         for (ind in noteIndices)
             indices.push(ind);
     }
-
-    public var handleRendering:Bool = true;
-
-    override public function draw()
-    {
-        if (handleRendering) super.draw();
-    }
-
     //Set this to true for spiral holds!
     //Note, they might cause some visual gaps. Maybe fix later?
     public var spiralHolds:Bool = false; //for now false cuz yeah
@@ -303,5 +298,4 @@ class SustainStrip extends FlxStrip
         }
         vertices = new DrawData(12, true, verts);
     }
-
-  }
+}
