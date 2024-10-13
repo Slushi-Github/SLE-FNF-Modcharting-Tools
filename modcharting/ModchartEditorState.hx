@@ -1082,9 +1082,19 @@ class ModchartEditorState extends states.MusicBeatState
                     }
                 }
 
-                var swagNote:Note = new Note(spawnTime, noteColumn, false, PlayState.SONG?.options?.arrowSkin, oldNote, this, PlayState.SONG?.speed, gottaHitNote ? playerStrums : opponentStrums,
-                    false);
-                var isPixelNote:Bool = (swagNote.texture.contains('pixel') || swagNote.noteSkin.contains('pixel'));
+
+                final swagNote:Note = new Note({
+                    strumTime: spawnTime,
+                    noteData: noteColumn,
+                    isSustainNote: false,
+                    noteSkin: PlayState.SONG?.options?.arrowSkin,
+                    prevNote: oldNote,
+                    createdFrom: this,
+                    scrollSpeed: PlayState.SONG?.speed,
+                    parentStrumline: gottaHitNote ? playerStrums : opponentStrums,
+                    inEditor: false
+                });
+                final isPixelNote:Bool = (swagNote.texture.contains('pixel') || swagNote.noteSkin.contains('pixel'));
                 swagNote.setupNote(gottaHitNote, gottaHitNote ? 1 : 0, daSection, noteType);
                 swagNote.containsPixelTexture = isPixelNote;
                 swagNote.sustainLength = holdLength;
@@ -1098,10 +1108,18 @@ class ModchartEditorState extends states.MusicBeatState
                     for (susNote in 0...roundSus + 1)
                     {
                         oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
-
-                        var sustainNote:Note = new Note(spawnTime + (curStepCrochet * susNote), noteColumn, true, PlayState.SONG?.options?.arrowSkin, oldNote, this, PlayState.SONG?.speed,
-                            gottaHitNote ? playerStrums : opponentStrums, false);
-                        var isPixelNoteSus:Bool = (sustainNote.texture.contains('pixel')
+                        final sustainNote:Note = new Note(                     {
+                            strumTime: spawnTime + (curStepCrochet * susNote),
+                            noteData: noteColumn,
+                            isSustainNote: true,
+                            noteSkin: PlayState.SONG?.options?.arrowSkin,
+                            prevNote: oldNote,
+                            createdFrom: this,
+                            scrollSpeed: PlayState.SONG?.speed,
+                            parentStrumline: gottaHitNote ? playerStrums : opponentStrums,
+                            inEditor: false
+                        });
+                        final isPixelNoteSus:Bool = (sustainNote.texture.contains('pixel')
                             || sustainNote.noteSkin.contains('pixel')
                             || oldNote.texture.contains('pixel')
                             || oldNote.noteSkin.contains('pixel'));
@@ -1113,7 +1131,7 @@ class ModchartEditorState extends states.MusicBeatState
                         swagNote.tail.push(sustainNote);
 
                         // After everything loads
-                        var isNotePixel:Bool = isPixelNoteSus;
+                        final isNotePixel:Bool = isPixelNoteSus;
                         oldNote.containsPixelTexture = isNotePixel;
                         sustainNote.correctionOffset = swagNote.height / 2;
                         if (!isNotePixel)
